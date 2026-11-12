@@ -343,6 +343,7 @@ addForm.addEventListener('submit', async (event) => {
     const result = await apiRequest('/api/events', { method: 'POST', body: values });
     addDialog.close();
     showToast(result.message);
+    launchConfetti(); // พลุกระดาษฉลอง (animations.js)
 
     // โหลดกิจกรรมใหม่ แล้วพาไปเดือนนั้นพร้อมเปิดรายละเอียดกิจกรรมที่เพิ่ม
     const data = await apiRequest('/api/events');
@@ -394,6 +395,12 @@ async function loadCalendar() {
     state.year = state.today.year;
     state.month = state.today.month;
     render();
+
+    // เปิดมาจากค้นหาด่วน / หน้าภาพรวม (calendar.html?add=1) → เปิดฟอร์มเพิ่มกิจกรรมเลย
+    if (new URLSearchParams(window.location.search).get('add') === '1') {
+      history.replaceState(null, '', 'calendar.html');
+      openAddDialog();
+    }
   } catch (error) {
     renderError(body, error.message, loadCalendar);
   }

@@ -6,11 +6,13 @@ const { getEvents, getEventById, addEvent } = require('../controllers/eventContr
 const { getMembers, deactivateMember } = require('../controllers/memberController');
 const { getFinance } = require('../controllers/financeController');
 const { getNotifications } = require('../controllers/notificationController');
+const { getOverview } = require('../controllers/overviewController');
 
 const router = express.Router();
 
 router.use(requireAuth);
 
+router.get('/overview', getOverview);
 router.get('/news', getNews);
 router.get('/events', getEvents);
 router.get('/events/:id', getEventById);

@@ -7,6 +7,7 @@ if (!getToken()) {
 }
 
 const NAV_ITEMS = [
+  { key: 'overview', label: 'ภาพรวม', href: 'dashboard.html', icon: 'dashboard' },
   { key: 'members', label: 'สมาชิก', href: 'members.html', icon: 'members' },
   { key: 'events', label: 'กิจกรรม', href: 'events.html', icon: 'events' },
   { key: 'finance', label: 'งบการเงิน', href: 'finance.html', icon: 'finance' },
@@ -45,7 +46,7 @@ function renderSidebar() {
   const sidebar = document.getElementById('sidebar');
   sidebar.setAttribute('aria-label', 'เมนูหลัก');
   sidebar.innerHTML = `
-    <a class="sidebar-logo" href="news.html"><img src="assets/logo-original.png" alt="SpeedX"></a>
+    <a class="sidebar-logo" href="dashboard.html"><img src="assets/logo-original.png" alt="SpeedX"></a>
     <nav><ul class="nav-list">${links}</ul></nav>
     <div class="sidebar-bottom">
       <div class="sidebar-user">
@@ -224,5 +225,6 @@ async function loadBell() {
 function initLayout() {
   renderSidebar();
   renderHeader();
+  if (typeof setupCommandPalette === 'function') setupCommandPalette(); // ค้นหาด่วน Ctrl+K (command.js)
   loadBell();
 }

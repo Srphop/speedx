@@ -173,11 +173,22 @@ async function loadMembers(quiet = false) {
     allMembers = data.members;
     renderFilters();
     renderVisible();
+    if (!quiet) flashLinkedMember();
   } catch (error) {
     if (quiet) return;
     renderError(tableBox, error.message, () => loadMembers());
     chartBox.innerHTML = '';
   }
+}
+
+// เปิดมาจากค้นหาด่วน (members.html?member=MEM-001) → เลื่อนไปที่แถวนั้นแล้วกระพริบ
+function flashLinkedMember() {
+  const id = new URLSearchParams(window.location.search).get('member');
+  if (!id) return;
+  const row = tableBox.querySelector(`tr[data-row="${CSS.escape(id)}"]`);
+  if (!row) return;
+  row.scrollIntoView({ block: 'center', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+  row.classList.add('row-flash');
 }
 
 // ---------- ลบสมาชิก (เปลี่ยนสถานะเป็น inactive ใน Google Sheet) ----------

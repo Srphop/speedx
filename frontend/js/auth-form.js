@@ -2,7 +2,7 @@
 
 // ล็อกอินอยู่แล้ว ไม่ต้องอยู่หน้านี้
 if (getToken()) {
-  window.location.replace('news.html');
+  window.location.replace('dashboard.html');
 }
 
 // ปุ่มรูปตา แสดง/ซ่อนรหัสผ่าน
@@ -44,7 +44,7 @@ function setSubmitting(submitting, label) {
   if (submitting) setSubmitting.timer = setTimeout(() => (hint.hidden = false), 5000);
 }
 
-// ล็อกอินสำเร็จ: เก็บ token ใช้ธีมของบัญชี แล้วไปหน้าข่าวสาร
+// ล็อกอินสำเร็จ: เก็บ token ใช้ธีมของบัญชี แล้วไปหน้าภาพรวม
 function finishLogin(result) {
   saveSession(result.token, result.user);
   applyTheme(result.user.theme || 'light');
@@ -52,5 +52,5 @@ function finishLogin(result) {
   // โลโก้พุ่งเข้าหาจอ + แฟลช (space.js) แล้วค่อยเปลี่ยนหน้า
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.dispatchEvent(new CustomEvent('space-jump'));
-  setTimeout(() => (window.location.href = 'news.html'), reduceMotion ? 0 : 900);
+  setTimeout(() => (window.location.href = 'dashboard.html'), reduceMotion ? 0 : 900);
 }

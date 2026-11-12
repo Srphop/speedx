@@ -1876,3 +1876,219 @@ textarea.input {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* ---------- ค้นหาด่วน Ctrl+K (command.js) ---------- */
+.command-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 8px 0 12px;
+  margin-right: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.command-button:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.command-button .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.command-button-text {
+  min-width: 96px;
+  text-align: left;
+}
+
+.command-dialog {
+  width: min(640px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 120px));
+  margin: 12vh auto auto;
+  padding: 0;
+  border: 1px solid var(--divider);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.command-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  animation: command-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.command-dialog::backdrop {
+  background: rgba(21, 24, 25, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes command-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+}
+
+.command-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.command-search .icon {
+  color: var(--muted);
+}
+
+.command-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+}
+
+.command-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.command-group {
+  padding: 10px 10px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.command-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  animation: command-row-in 0.25s ease both;
+  animation-delay: calc(min(var(--i), 10) * 18ms);
+}
+
+@keyframes command-row-in {
+  from { opacity: 0; transform: translateX(-6px); }
+}
+
+.command-item[aria-selected='true'] {
+  background: var(--hover-row);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.command-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hover-row);
+}
+
+.command-item[aria-selected='true'] .command-icon {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.command-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.command-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.command-title,
+.command-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-title {
+  font-weight: 600;
+}
+
+.command-title mark {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: inherit;
+  border-radius: 3px;
+}
+
+.command-enter {
+  color: var(--muted);
+  opacity: 0;
+}
+
+.command-item[aria-selected='true'] .command-enter {
+  opacity: 1;
+}
+
+.command-empty,
+.command-loading {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.command-footer {
+  display: flex;
+  gap: 16px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--divider);
+}
+
+@media (max-width: 767px) {
+  .command-button { width: 44px; height: 44px; padding: 0; justify-content: center; margin-right: 0; border-color: transparent; }
+  .command-button-text,
+  .command-button kbd { display: none; }
+  .command-dialog { margin-top: 16px; }
+  .command-footer { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .command-dialog[open],
+  .command-item { animation: none; }
+}
+
+/* ---------- พลุกระดาษ (launchConfetti) ---------- */
+.confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 300;
+}
+
+/* แถวสมาชิกที่เปิดมาจากค้นหาด่วน */
+.row-flash td {
+  animation: row-flash 2.4s ease;
+}
+
+@keyframes row-flash {
+  0%, 40% { background: color-mix(in srgb, var(--accent) 40%, transparent); }
+}

@@ -11,6 +11,7 @@ const POSITION_SUGGESTIONS = ['ประธานชมรม', 'รองปร
 
 // คีย์ลัดสลับหน้า: กด g แล้วตามด้วยตัวอักษร
 const PAGE_SHORTCUTS = [
+  { key: 'o', label: 'ภาพรวม', href: 'dashboard.html' },
   { key: 'n', label: 'ข่าวสารชมรม', href: 'news.html' },
   { key: 'm', label: 'สมาชิก', href: 'members.html' },
   { key: 'e', label: 'กิจกรรม', href: 'events.html' },
@@ -368,8 +369,9 @@ function openShortcutsDialog() {
     </ul>
     <h3 class="about-heading" style="margin-top:20px">ทั่วไป</h3>
     <ul class="shortcut-list">
+      ${row(['Ctrl', 'K'], 'ค้นหาด่วน กิจกรรม สมาชิก หน้า และคำสั่ง')}
       ${row(['t'], 'เปิดเมนูธีม')}
-      ${row(['/'], 'ค้นหากิจกรรม (หน้ากิจกรรม)')}
+      ${row(['/'], 'ค้นหา (หน้ากิจกรรม = ช่องค้นหาในหน้า)')}
       ${row(['?'], 'เปิดหน้านี้')}
       ${row(['Esc'], 'ปิดหน้าต่าง / เมนู')}
     </ul>`;

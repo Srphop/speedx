@@ -62,3 +62,71 @@ function switchThemeWithReveal(nextTheme, button) {
 
   return transition.finished.finally(() => root.classList.remove('theme-switching'));
 }
+
+/**
+ * พลุกระดาษเต็มจอ ใช้ตอนทำอะไรสำเร็จ เช่น เพิ่มกิจกรรม
+ * origin: จุดที่ยิงออก { x, y } เป็นสัดส่วนของจอ (0-1)
+ */
+function launchConfetti(origin = { x: 0.5, y: 0.35 }) {
+  if (prefersReducedMotion()) return;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'confetti-canvas';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const ratio = window.devicePixelRatio || 1;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  canvas.width = width * ratio;
+  canvas.height = height * ratio;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  const styles = getComputedStyle(document.documentElement);
+  const colors = ['--accent', '--chart-1', '--chart-2', '--chart-3', '--chart-4']
+    .map((name) => styles.getPropertyValue(name).trim())
+    .concat(['#ffffff', '#f5b800']);
+
+  const pieces = Array.from({ length: 160 }, () => {
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
+    const speed = 7 + Math.random() * 11;
+    return {
+      x: width * origin.x,
+      y: height * origin.y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: 6 + Math.random() * 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      spin: Math.random() * Math.PI,
+      spinSpeed: (Math.random() - 0.5) * 0.4,
+      round: Math.random() < 0.3,
+    };
+  });
+
+  const start = performance.now();
+  function frame(now) {
+    const age = (now - start) / 1000;
+    ctx.clearRect(0, 0, width, height);
+    pieces.forEach((p) => {
+      p.vy += 0.32; // แรงโน้มถ่วง
+      p.vx *= 0.99;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.spin += p.spinSpeed;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, 1 - Math.max(0, age - 1.6) / 0.8);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.spin);
+      ctx.fillStyle = p.color;
+      if (p.round) {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2 * Math.abs(Math.cos(p.spin * 2)) + 1);
+      }
+      ctx.restore();
+    });
+    if (age < 2.4) requestAnimationFrame(frame);
+    else canvas.remove();
+  }
+  requestAnimationFrame(frame);
+}

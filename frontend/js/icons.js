@@ -1,5 +1,6 @@
 // ===== ไอคอนเส้นขนาด 20px (SVG) ใช้ผ่าน icon('ชื่อ') =====
 const ICON_PATHS = {
+  dashboard: '<rect x="3" y="3" width="7.5" height="9" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="1.5"/><rect x="13.5" y="11.5" width="7.5" height="9.5" rx="1.5"/><rect x="3" y="15" width="7.5" height="6" rx="1.5"/>',
   members: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M21 20c0-2.6-1.6-4.8-4-5.7"/>',
   events: '<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',
   finance: '<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M6 6V5a2 2 0 0 1 2-2h10"/><path d="M16 13h2"/>',
