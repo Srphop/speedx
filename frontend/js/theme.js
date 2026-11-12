@@ -10,6 +10,10 @@ const THEMES = [
   { id: 'halloween', label: 'ฮาโลวีน', icon: 'pumpkin' },
   { id: 'valentine', label: 'วาเลนไทน์', icon: 'heart' },
   { id: 'christmas', label: 'คริสต์มาส', icon: 'tree' },
+  // ธีมภาพพื้นหลัง (รูปอยู่ใน assets/themes/)
+  { id: 'neon', label: 'นีออนม่วง', icon: 'sparkle' },
+  { id: 'blade', label: 'ดาบมรกต', icon: 'sword' },
+  { id: 'cyber', label: 'ไซเบอร์', icon: 'chip' },
 ];
 
 function isKnownTheme(id) {

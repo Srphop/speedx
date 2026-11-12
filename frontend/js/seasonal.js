@@ -2,6 +2,9 @@
 //   คริสต์มาส  → หิมะตก
 //   วาเลนไทน์  → หัวใจลอยขึ้น
 //   ฮาโลวีน    → ค้างคาวบิน + ประกายไฟลอยขึ้น
+//   นีออนม่วง  → ริบบิ้นพลังงาน + ประกาย + สายฟ้าแลบ
+//   ดาบมรกต    → ไฟเขียวลอย + หมอกม่วง + รอยฟันดาบ
+//   ไซเบอร์    → สายข้อมูลตก + หกเหลี่ยมลอย + เส้นสแกน
 // canvas กดทะลุได้ (pointer-events: none) เลยไม่บังปุ่ม
 // คนที่ตั้งเครื่องให้ลดการเคลื่อนไหว จะไม่มีเอฟเฟกต์
 
@@ -164,10 +167,258 @@ function drawHalloween(ctx, scene, width, height, seconds) {
   });
 }
 
+// ================= ธีมภาพพื้นหลัง =================
+
+// ประกายเล็ก ๆ ลอยขึ้น (ใช้ร่วมกันทั้ง 3 ธีม)
+function newSpark(width, height, colors, anywhere) {
+  return {
+    x: random(0, width),
+    y: anywhere ? random(0, height) : height + random(0, 40),
+    size: random(1, 2.8),
+    speed: random(25, 80),
+    drift: random(-12, 12),
+    flicker: random(0, Math.PI * 2),
+    color: colors[Math.floor(Math.random() * colors.length)],
+  };
+}
+
+function drawSparks(ctx, sparks, width, height, seconds, colors) {
+  sparks.forEach((p, index) => {
+    p.y -= p.speed * seconds;
+    p.x += p.drift * seconds;
+    p.flicker += seconds * 6;
+    if (p.y < -10) sparks[index] = newSpark(width, height, colors, false);
+    const alpha = 0.45 + Math.sin(p.flicker) * 0.35;
+    const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
+    glow.addColorStop(0, p.color);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.globalAlpha = Math.max(0, alpha);
+    ctx.fillStyle = glow;
+    ctx.fillRect(p.x - p.size * 4, p.y - p.size * 4, p.size * 8, p.size * 8);
+  });
+  ctx.globalAlpha = 1;
+}
+
+// เส้นเรืองแสง: วาดซ้อน 3 ชั้น (กว้างจาง → บางสว่าง) ให้ดูเรืองโดยไม่ต้องใช้ shadowBlur
+function glowStroke(ctx, drawPath, color, alpha) {
+  [[14, 0.06], [6, 0.16], [1.6, 0.9]].forEach(([lineWidth, a]) => {
+    ctx.globalAlpha = a * alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    drawPath();
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ---------- นีออนม่วง: ริบบิ้นพลังงานม่วงฟ้า + ประกาย + สายฟ้าแลบ ----------
+const NEON_COLORS = ['#C77DFF', '#7DF9FF', '#FFFFFF', '#E0AAFF'];
+
+function makeNeon(width, height) {
+  return {
+    time: 0,
+    ribbons: [
+      { base: 0.12, amp: 40, freq: 0.006, speed: 0.9, color: '#C77DFF' },
+      { base: 0.9, amp: 55, freq: 0.004, speed: -0.7, color: '#7DF9FF' },
+      { base: 0.82, amp: 30, freq: 0.009, speed: 1.3, color: '#E0AAFF' },
+    ],
+    sparks: Array.from({ length: Math.min(60, Math.round(width / 22)) }, () => newSpark(width, height, NEON_COLORS, true)),
+    bolt: null,
+    nextBolt: random(2, 4),
+  };
+}
+
+// สายฟ้าซิกแซกจากขอบจอ
+function makeBolt(width, height) {
+  const fromLeft = Math.random() < 0.5;
+  const points = [];
+  let x = fromLeft ? random(0, width * 0.15) : random(width * 0.85, width);
+  let y = random(0, height * 0.3);
+  const steps = 10;
+  for (let i = 0; i <= steps; i++) {
+    points.push([x, y]);
+    x += (fromLeft ? 1 : -1) * random(10, 40);
+    y += random(20, 55);
+  }
+  return { points, life: 0.35 };
+}
+
+function drawNeon(ctx, scene, width, height, seconds) {
+  scene.time += seconds;
+  ctx.globalCompositeOperation = 'lighter';
+  scene.ribbons.forEach((r) => {
+    glowStroke(ctx, () => {
+      for (let x = -20; x <= width + 20; x += 16) {
+        const y = height * r.base + Math.sin(x * r.freq + scene.time * r.speed) * r.amp + Math.sin(x * r.freq * 2.3 - scene.time) * r.amp * 0.3;
+        if (x === -20) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+    }, r.color, 0.8);
+  });
+  drawSparks(ctx, scene.sparks, width, height, seconds, NEON_COLORS);
+
+  scene.nextBolt -= seconds;
+  if (scene.nextBolt <= 0) {
+    scene.bolt = makeBolt(width, height);
+    scene.nextBolt = random(3, 6);
+  }
+  if (scene.bolt) {
+    scene.bolt.life -= seconds;
+    if (scene.bolt.life <= 0) scene.bolt = null;
+    else {
+      const flash = scene.bolt.life / 0.35;
+      glowStroke(ctx, () => scene.bolt.points.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y))), '#E0AAFF', flash);
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ---------- ดาบมรกต: ไฟสีเขียวลอยขึ้น + หมอกม่วง + รอยฟันดาบ ----------
+const BLADE_COLORS = ['#39E07A', '#8FF5B4', '#C6FFD9'];
+
+function makeBlade(width, height) {
+  return {
+    embers: Array.from({ length: Math.min(55, Math.round(width / 24)) }, () => newSpark(width, height, BLADE_COLORS, true)),
+    mists: Array.from({ length: 7 }, () => ({
+      x: random(0, width),
+      y: random(height * 0.3, height),
+      radius: random(160, 320),
+      speed: random(8, 22),
+      alpha: random(0.05, 0.11),
+    })),
+    slash: null,
+    nextSlash: random(2, 3.5),
+  };
+}
+
+// รอยฟัน: เส้นเฉียงพุ่งผ่านจอเร็ว ๆ แล้วจางหาย
+function makeSlash(width, height) {
+  const y1 = random(height * 0.1, height * 0.6);
+  return { x1: random(-100, width * 0.3), y1, x2: random(width * 0.7, width + 100), y2: y1 + random(-height * 0.35, height * 0.35), age: 0 };
+}
+
+function drawBlade(ctx, scene, width, height, seconds) {
+  // หมอกม่วงลอยช้า ๆ
+  scene.mists.forEach((m) => {
+    m.y -= m.speed * seconds;
+    if (m.y < -m.radius) {
+      m.y = height + m.radius;
+      m.x = random(0, width);
+    }
+    const fog = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.radius);
+    fog.addColorStop(0, `rgba(177, 92, 255, ${m.alpha})`);
+    fog.addColorStop(1, 'rgba(177, 92, 255, 0)');
+    ctx.fillStyle = fog;
+    ctx.fillRect(m.x - m.radius, m.y - m.radius, m.radius * 2, m.radius * 2);
+  });
+
+  ctx.globalCompositeOperation = 'lighter';
+  drawSparks(ctx, scene.embers, width, height, seconds, BLADE_COLORS);
+
+  scene.nextSlash -= seconds;
+  if (scene.nextSlash <= 0) {
+    scene.slash = makeSlash(width, height);
+    scene.nextSlash = random(4, 7);
+  }
+  if (scene.slash) {
+    const s = scene.slash;
+    s.age += seconds;
+    const draw = Math.min(1, s.age / 0.18); // พุ่งออกไป 0.18 วินาที
+    const fade = s.age < 0.18 ? 1 : Math.max(0, 1 - (s.age - 0.18) / 0.6);
+    if (fade <= 0) scene.slash = null;
+    else {
+      const tipX = s.x1 + (s.x2 - s.x1) * draw;
+      const tipY = s.y1 + (s.y2 - s.y1) * draw;
+      glowStroke(ctx, () => {
+        ctx.moveTo(s.x1, s.y1);
+        ctx.lineTo(tipX, tipY);
+      }, '#5CF095', fade);
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ---------- ไซเบอร์: สายข้อมูลตกลงมา + เส้นสแกน + หกเหลี่ยมลอย ----------
+function makeCyber(width, height) {
+  return {
+    streams: Array.from({ length: Math.min(40, Math.round(width / 40)) }, () => ({
+      x: Math.round(random(0, width) / 24) * 24,
+      y: random(-height, height),
+      length: random(60, 180),
+      speed: random(80, 220),
+      alpha: random(0.15, 0.5),
+    })),
+    hexes: Array.from({ length: 9 }, () => ({
+      x: random(0, width),
+      y: random(0, height),
+      size: random(14, 42),
+      spin: random(-0.4, 0.4),
+      angle: random(0, Math.PI),
+      speed: random(6, 18),
+      alpha: random(0.15, 0.4),
+    })),
+    scan: random(0, height),
+  };
+}
+
+function hexPath(ctx, x, y, size, angle) {
+  for (let i = 0; i <= 6; i++) {
+    const a = angle + (Math.PI / 3) * i;
+    const px = x + Math.cos(a) * size;
+    const py = y + Math.sin(a) * size;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+}
+
+function drawCyber(ctx, scene, width, height, seconds) {
+  ctx.globalCompositeOperation = 'lighter';
+  scene.streams.forEach((s) => {
+    s.y += s.speed * seconds;
+    if (s.y - s.length > height) {
+      s.y = random(-200, 0);
+      s.x = Math.round(random(0, width) / 24) * 24;
+    }
+    const tail = ctx.createLinearGradient(s.x, s.y - s.length, s.x, s.y);
+    tail.addColorStop(0, 'rgba(54, 200, 255, 0)');
+    tail.addColorStop(1, `rgba(140, 230, 255, ${s.alpha})`);
+    ctx.fillStyle = tail;
+    ctx.fillRect(s.x, s.y - s.length, 2, s.length);
+    ctx.fillStyle = `rgba(220, 248, 255, ${s.alpha + 0.3})`;
+    ctx.fillRect(s.x - 1, s.y - 2, 4, 4);
+  });
+
+  scene.hexes.forEach((h) => {
+    h.angle += h.spin * seconds;
+    h.y -= h.speed * seconds;
+    if (h.y < -60) {
+      h.y = height + 60;
+      h.x = random(0, width);
+    }
+    glowStroke(ctx, () => hexPath(ctx, h.x, h.y, h.size, h.angle), Math.random() < 0.003 ? '#FF4D6D' : '#36C8FF', h.alpha);
+  });
+
+  // แถบสแกนเลื่อนจากบนลงล่าง
+  scene.scan = (scene.scan + 90 * seconds) % (height + 200);
+  const band = ctx.createLinearGradient(0, scene.scan - 100, 0, scene.scan);
+  band.addColorStop(0, 'rgba(54, 200, 255, 0)');
+  band.addColorStop(1, 'rgba(54, 200, 255, 0.07)');
+  ctx.fillStyle = band;
+  ctx.fillRect(0, scene.scan - 100, width, 100);
+  ctx.fillStyle = 'rgba(140, 230, 255, 0.25)';
+  ctx.fillRect(0, scene.scan, width, 1);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
 const SEASON_EFFECTS = {
   christmas: { make: makeSnow, draw: drawSnow },
   valentine: { make: makeHearts, draw: drawHearts },
   halloween: { make: makeHalloween, draw: drawHalloween },
+  neon: { make: makeNeon, draw: drawNeon },
+  blade: { make: makeBlade, draw: drawBlade },
+  cyber: { make: makeCyber, draw: drawCyber },
 };
 
 function stopSeasonEffect() {

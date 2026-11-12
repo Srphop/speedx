@@ -61,7 +61,10 @@
 
 /* ธีมมืดแบบเดียวกัน ใช้ร่วมกับฮาโลวีนและคริสต์มาส: สีป้ายสถานะ */
 :root[data-theme='halloween'],
-:root[data-theme='christmas'] {
+:root[data-theme='christmas'],
+:root[data-theme='neon'],
+:root[data-theme='blade'],
+:root[data-theme='cyber'] {
   --upcoming-bg: #44320b;  --upcoming-text: #ffe08a;
   --planned-bg: #492527;   --planned-text: #ffc0bc;
   --done-bg: #203c25;      --done-text: #c2eab6;
@@ -125,10 +128,169 @@
   --chart-1: #e5383b; --chart-2: #f2c14e; --chart-3: #2e9e5b; --chart-4: #f4a3a5; --chart-5: #8fa597;
 }
 
+/* ---------- ธีมภาพพื้นหลัง: นีออนม่วง / ดาบมรกต / ไซเบอร์ ----------
+   รูปอยู่ด้านหลังสุด การ์ดเป็นกระจกฝ้าโปร่ง ๆ ให้เห็นรูปแต่ยังอ่านตัวหนังสือออก */
+
+/* นีออนม่วง: ม่วงพลังงาน + ฟ้านีออน */
+:root[data-theme='neon'] {
+  --canvas: #0d0a1a;
+  --surface: #191330;
+  --sidebar: #0a0814;
+  --text: #f3eeff;
+  --muted: #c3b8e0;
+  --divider: #3a2f63;
+  --input-outline: #8a7cb8;
+  --accent: #b86bff;
+  --accent-hover: #c98aff;
+  --on-accent: #12081f;
+  --focus: #7df9ff;
+  --danger: #ffa3a3;
+  --hover-row: #261d45;
+  --chart-1: #b86bff; --chart-2: #7df9ff; --chart-3: #ff7ad9; --chart-4: #6c4bd1; --chart-5: #8f8aa6;
+  --glass: rgba(22, 16, 46, 0.66);
+  --glass-side: rgba(10, 8, 22, 0.72);
+  --wallpaper: url('../assets/themes/neon.jpg');
+  --wallpaper-blur: url('../assets/themes/neon-blur.jpg');
+}
+
+/* ดาบมรกต: หมอกม่วง + ดาบเขียว */
+:root[data-theme='blade'] {
+  --canvas: #0c0a12;
+  --surface: #1a1424;
+  --sidebar: #08070c;
+  --text: #f1f5ef;
+  --muted: #bdb6cb;
+  --divider: #3a2e4c;
+  --input-outline: #85799a;
+  --accent: #39e07a;
+  --accent-hover: #5cf095;
+  --on-accent: #06140b;
+  --focus: #c27bff;
+  --danger: #ffa3a3;
+  --hover-row: #251c33;
+  --chart-1: #39e07a; --chart-2: #b15cff; --chart-3: #8ff5b4; --chart-4: #7a3fc0; --chart-5: #8f8799;
+  --glass: rgba(20, 14, 30, 0.68);
+  --glass-side: rgba(8, 6, 14, 0.74);
+  --wallpaper: url('../assets/themes/blade.jpg');
+  --wallpaper-blur: url('../assets/themes/blade-blur.jpg');
+}
+
+/* ไซเบอร์: น้ำเงินเข้ม + ฟ้าไฟ + แดงจุดเน้น */
+:root[data-theme='cyber'] {
+  --canvas: #08111f;
+  --surface: #0f1c30;
+  --sidebar: #060c16;
+  --text: #eaf6ff;
+  --muted: #a9c0d8;
+  --divider: #23395a;
+  --input-outline: #6f8cab;
+  --accent: #36c8ff;
+  --accent-hover: #62d6ff;
+  --on-accent: #03121c;
+  --focus: #ff4d6d;
+  --danger: #ff9fae;
+  --hover-row: #142842;
+  --chart-1: #36c8ff; --chart-2: #ff4d6d; --chart-3: #8fe3ff; --chart-4: #2b6fb3; --chart-5: #8a9bb0;
+  --glass: rgba(10, 22, 42, 0.74);
+  --glass-side: rgba(5, 11, 22, 0.72);
+  --wallpaper: url('../assets/themes/cyber.jpg');
+  --wallpaper-blur: url('../assets/themes/cyber-blur.jpg');
+}
+
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) {
+  color-scheme: dark;
+}
+
+/* ชั้นหลังสุด: รูปเดียวกันแบบเบลอ เต็มจอ ให้สีกลืนกัน */
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body::before {
+  content: '';
+  position: fixed;
+  inset: -60px;
+  z-index: -2;
+  background: var(--wallpaper-blur) center / cover no-repeat;
+  filter: blur(40px) brightness(0.55) saturate(1.3);
+}
+
+/* ชั้นรูปจริง: รูปแนวตั้งชิดขวาเต็มความสูง ขอบซ้ายค่อย ๆ จางหาย */
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 56.2vh; /* กว้างเท่ารูปแนวตั้ง (สัดส่วน 9:16) ขอบซ้ายจางลงในรูปเอง */
+  z-index: -1;
+  background: var(--wallpaper) center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 40%);
+  mask-image: linear-gradient(to right, transparent, #000 40%);
+  transform-origin: right center;
+  animation: wallpaper-drift 18s ease-in-out infinite alternate;
+}
+
+/* รูปแนวนอน (ไซเบอร์): เต็มจอ ตัวละครอยู่กลาง เลยมืดลงนิดให้อ่านง่าย */
+:root[data-theme='cyber'] body::after {
+  left: 0;
+  width: auto;
+  background: linear-gradient(90deg, rgba(6, 12, 22, 0.55), rgba(6, 12, 22, 0.15) 50%, rgba(6, 12, 22, 0.45)), var(--wallpaper) center 30% / cover no-repeat;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* รูปขยับช้า ๆ เหมือนกล้องหายใจ */
+@keyframes wallpaper-drift {
+  from { transform: scale(1); }
+  to { transform: scale(1.05) translateY(-1%); }
+}
+
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body {
+  background: var(--canvas);
+}
+
+/* พื้นหลังของโครงหน้าโปร่งใส ให้เห็นรูป */
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .main-header {
+  background: var(--glass-side);
+  backdrop-filter: blur(12px);
+}
+
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .sidebar {
+  background: var(--glass-side);
+  backdrop-filter: blur(14px);
+  border-right: 1px solid var(--divider);
+}
+
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .card {
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 767px) {
+  /* จอมือถือ: รูปเต็มจอ จางลง */
+  :root:is([data-theme='neon'], [data-theme='blade']) body::after {
+    left: 0;
+    width: auto;
+    background-size: cover;
+    background-position: center 20%;
+    opacity: 0.55;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body::after {
+    animation: none;
+  }
+}
+
 /* โลโก้ขาวล้วนในแถบเมนูของธีมเทศกาล (สีเขียวของโลโก้ไม่เข้ากับธีม) */
 :root[data-theme='halloween'] .sidebar-logo img,
 :root[data-theme='valentine'] .sidebar-logo img,
-:root[data-theme='christmas'] .sidebar-logo img {
+:root[data-theme='christmas'] .sidebar-logo img,
+:root[data-theme='neon'] .sidebar-logo img,
+:root[data-theme='blade'] .sidebar-logo img,
+:root[data-theme='cyber'] .sidebar-logo img {
   content: url('../assets/logo-white.png');
 }
 
@@ -144,9 +306,15 @@
 
 /* หน้า login ธีมเทศกาล: โลโก้บนพื้นขาวใช้สีเข้ม พื้นมืดใช้สีขาว */
 :root[data-theme='halloween'] .logo-light-mode,
-:root[data-theme='christmas'] .logo-light-mode { display: none; }
+:root[data-theme='christmas'] .logo-light-mode,
+:root[data-theme='neon'] .logo-light-mode,
+:root[data-theme='blade'] .logo-light-mode,
+:root[data-theme='cyber'] .logo-light-mode { display: none; }
 :root[data-theme='halloween'] .logo-dark-mode,
-:root[data-theme='christmas'] .logo-dark-mode { display: block; content: url('../assets/logo-white.png'); }
+:root[data-theme='christmas'] .logo-dark-mode,
+:root[data-theme='neon'] .logo-dark-mode,
+:root[data-theme='blade'] .logo-dark-mode,
+:root[data-theme='cyber'] .logo-dark-mode { display: block; content: url('../assets/logo-white.png'); }
 
 /* ---------- 2. พื้นฐาน ---------- */
 *,

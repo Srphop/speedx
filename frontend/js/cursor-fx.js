@@ -13,6 +13,9 @@
     halloween: { colors: ['#FF7A1A', '#FFB066', '#B15CFF'], shape: 'ember' },
     valentine: { colors: ['#FF5C8A', '#FF8FAB', '#C2185B'], shape: 'heart' },
     christmas: { colors: ['#FFFFFF', '#F2C14E', '#E5383B'], shape: 'snow' },
+    neon: { colors: ['#C77DFF', '#7DF9FF', '#FFFFFF'], shape: 'spark' },
+    blade: { colors: ['#39E07A', '#B15CFF', '#D6FFE6'], shape: 'ember' },
+    cyber: { colors: ['#36C8FF', '#B8F2FF', '#FF4D6D'], shape: 'spark' },
   };
 
   const canvas = document.createElement('canvas');
