@@ -5,7 +5,7 @@
 
 Final Project วิชา 2110221 โจทย์ P4 Club Activity Dashboard
 
-- **Live:** https://speedx.onrender.com (เปลี่ยนเป็นลิงก์จริงของทีม)
+- **Live:** https://speedx-o1po.onrender.com
 
 ## เปิดเว็บในเครื่อง (ไม่ต้องตั้งค่าอะไร)
 
