@@ -2260,3 +2260,35 @@ textarea.input {
 @keyframes row-flash {
   0%, 40% { background: color-mix(in srgb, var(--accent) 40%, transparent); }
 }
+
+/* ---------- ปุ่มเล็ก + ปุ่มส่งออก (export.js) ---------- */
+.btn-small {
+  min-height: 36px;
+  height: 36px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.btn-small .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.calendar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--divider);
+}
+
+.mini-meter > span:last-child {
+  white-space: nowrap;
+}

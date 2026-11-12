@@ -263,6 +263,56 @@
   .main-header { view-transition-name: main-header; }
   .scroll-area { view-transition-name: page-content; }
   .nav-link[aria-current='page'] { view-transition-name: nav-active; }
+  .page-title { view-transition-name: page-title; }
+
+  /* ชื่อหน้ามุมบน: ของเก่าเลื่อนออก ของใหม่เลื่อนเข้า */
+  ::view-transition-group(page-title) {
+    animation-duration: 0.4s;
+  }
+
+  ::view-transition-old(page-title) {
+    animation: title-out 0.2s ease-in both;
+  }
+
+  ::view-transition-new(page-title) {
+    animation: title-in 0.42s var(--ease-out) 0.06s both;
+  }
+
+  /* มีทิศทาง (layout.js ติด data-nav-dir ให้): ไปเมนูล่าง = ขึ้น, ไปเมนูบน = ลง */
+  html[data-nav-dir='down']::view-transition-old(page-content) { animation: slide-out-up 0.22s ease-in both; }
+  html[data-nav-dir='down']::view-transition-new(page-content) { animation: slide-in-up 0.5s var(--ease-out) both; }
+  html[data-nav-dir='up']::view-transition-old(page-content) { animation: slide-out-down 0.22s ease-in both; }
+  html[data-nav-dir='up']::view-transition-new(page-content) { animation: slide-in-down 0.5s var(--ease-out) both; }
+  html[data-nav-dir='up']::view-transition-old(page-title) { animation: title-out-down 0.2s ease-in both; }
+  html[data-nav-dir='up']::view-transition-new(page-title) { animation: title-in-down 0.42s var(--ease-out) 0.06s both; }
+
+  @keyframes title-out { to { opacity: 0; transform: translateY(-14px); filter: blur(3px); } }
+  @keyframes title-in { from { opacity: 0; transform: translateY(16px); filter: blur(3px); } }
+  @keyframes title-out-down { to { opacity: 0; transform: translateY(14px); filter: blur(3px); } }
+  @keyframes title-in-down { from { opacity: 0; transform: translateY(-16px); filter: blur(3px); } }
+  @keyframes slide-out-up { to { opacity: 0; transform: translateY(-36px); } }
+  @keyframes slide-in-up { from { opacity: 0; transform: translateY(56px); filter: blur(6px); } }
+  @keyframes slide-out-down { to { opacity: 0; transform: translateY(36px); } }
+  @keyframes slide-in-down { from { opacity: 0; transform: translateY(-56px); filter: blur(6px); } }
+
+  /* เลื่อนหน้าแบบนุ่ม ๆ (เช่นตอนกดไปที่สมาชิกจากค้นหาด่วน) */
+  .scroll-area {
+    scroll-behavior: smooth;
+  }
+
+  /* หัวหน้ามีเงาขึ้นมาตอนเลื่อนเนื้อหาลง (Chrome / Edge: ผูกกับการเลื่อน ไม่ต้องใช้ JS) */
+  @supports (animation-timeline: scroll()) {
+    .main { timeline-scope: --page-scroll; }
+    .scroll-area { scroll-timeline: --page-scroll block; }
+    .main-header {
+      animation: header-lift linear both;
+      animation-timeline: --page-scroll;
+      animation-range: 0px 120px;
+    }
+    @keyframes header-lift {
+      to { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); border-bottom-color: transparent; }
+    }
+  }
 
   ::view-transition-group(nav-active) {
     animation-duration: 0.42s;

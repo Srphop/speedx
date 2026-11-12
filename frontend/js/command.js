@@ -10,6 +10,8 @@ let commandActive = 0;
 function commandActions() {
   const actions = [
     { title: 'เพิ่มกิจกรรมใหม่', subtitle: 'เปิดฟอร์มเพิ่มกิจกรรมในปฏิทิน', icon: 'plus', run: () => (window.location.href = 'calendar.html?add=1') },
+    { title: 'โหมดพรีเซนต์', subtitle: 'โชว์หน้าภาพรวมเต็มจอทีละการ์ด วนเอง', icon: 'play', keywords: 'present slideshow kiosk นำเสนอ', run: () => (window.location.href = 'dashboard.html?present=1') },
+    { title: 'ส่งออกรายงานสรุป', subtitle: 'รายงานทั้งชมรมพร้อมพิมพ์ หรือบันทึกเป็น PDF', icon: 'report', keywords: 'export pdf report พิมพ์', run: () => (window.location.href = 'report.html') },
     { title: 'แก้ไขโปรไฟล์', subtitle: 'รูป ชื่อ ตำแหน่ง', icon: 'user', run: () => clickAccountAction('profile') },
     { title: 'เปลี่ยนรหัสผ่าน', subtitle: 'บัญชีของฉัน', icon: 'lock', run: () => clickAccountAction('password') },
     { title: 'ดูคีย์ลัดทั้งหมด', subtitle: 'กด ? ก็ได้', icon: 'keyboard', run: () => clickAccountAction('shortcuts') },

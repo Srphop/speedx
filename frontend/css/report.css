@@ -1,0 +1,401 @@
+/* =========================================================
+   รายงานสรุปชมรม (report.html)
+   บนจอ: กระดาษ A4 วางบนพื้นเทา + แถบเครื่องมือ
+   ตอนพิมพ์: เหลือแต่กระดาษ ขอบ 14 มม.
+   ========================================================= */
+
+:root {
+  --ink: #172022;
+  --ink-soft: #4a5558;
+  --line: #dfe4e2;
+  --brand-dark: #1b1f20;
+  --brand: #a0ec29;
+  --brand-deep: #2e6b1c;
+  --paper: #ffffff;
+  --desk: #e9ece8;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--desk);
+  color: var(--ink);
+  font-family: Inter, 'Noto Sans Thai', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+h1, h2, h3, p { margin: 0; }
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ---------- แถบเครื่องมือ ---------- */
+.report-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  background: var(--brand-dark);
+  color: #f2f5f3;
+}
+
+.rt-hint {
+  flex: 1;
+  color: #b8c4c1;
+  font-size: 14px;
+}
+
+.rt-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #3b4645;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.rt-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #111516;
+}
+
+.rt-primary:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* ---------- กระดาษ ---------- */
+.report-paper {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 24px auto 48px;
+  padding: 16mm 15mm;
+  background: var(--paper);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  animation: paper-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes paper-in {
+  from { opacity: 0; transform: translateY(16px); }
+}
+
+.report-loading {
+  padding: 80px 0;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+.r-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid var(--brand);
+}
+
+.r-logo {
+  width: 150px;
+  height: auto;
+}
+
+.r-title h1 {
+  font-size: 26px;
+  line-height: 1.25;
+}
+
+.r-title p {
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+
+.r-next {
+  display: grid;
+  gap: 2px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--brand-dark);
+  color: #f2f5f3;
+}
+
+.r-next span {
+  color: var(--brand);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.r-next strong {
+  font-size: 17px;
+}
+
+.r-next em {
+  font-style: normal;
+  color: #c9d2d0;
+}
+
+.r-section {
+  margin-top: 20px;
+  break-inside: avoid-page;
+}
+
+.r-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+.r-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--brand-deep);
+  color: #fff;
+  font-size: 13px;
+}
+
+.r-section h3 {
+  font-size: 14px;
+  margin: 14px 0 6px;
+}
+
+.r-note {
+  color: var(--ink-soft);
+  margin: -4px 0 8px;
+}
+
+/* ตัวเลขหลัก */
+.r-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.r-kpi {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--brand-deep);
+  border-radius: 8px;
+}
+
+.r-kpi-label {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.r-kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.r-kpi-unit {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+/* ตาราง */
+.r-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.r-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 6px 8px;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.r-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.r-table tr {
+  break-inside: avoid;
+}
+
+.r-right { text-align: right !important; }
+.r-nowrap { white-space: nowrap; }
+
+.r-sub {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.r-status {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.r-status-upcoming { background: #fff1c2; color: #6b4d00; }
+.r-status-planned { background: #ffe1df; color: #8a1f17; }
+.r-status-done { background: #dcf5d0; color: #22561a; }
+.r-status-cancelled { background: #e7ebea; color: #444f50; }
+
+.r-bar-cell {
+  width: 28%;
+  vertical-align: middle !important;
+}
+
+.r-bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: #eef1ec;
+  overflow: hidden;
+}
+
+.r-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--brand-deep);
+}
+
+/* แถบงบ */
+.r-budget-track {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: #eef1ec;
+}
+
+.r-budget-track span {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  background: var(--brand-deep);
+}
+
+.r-budget-track i {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--ink);
+}
+
+.r-budget p {
+  margin-top: 6px;
+  color: var(--ink-soft);
+}
+
+/* สมาชิกขาประจำ */
+.r-top {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rank;
+}
+
+.r-top li {
+  counter-increment: rank;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.r-top li::before {
+  content: counter(rank);
+  grid-row: span 2;
+  align-self: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand-deep);
+}
+
+.r-top span {
+  grid-column: 2;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.r-top b {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.r-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+/* ---------- จอเล็ก: กระดาษพอดีจอ ---------- */
+@media screen and (max-width: 860px) {
+  .rt-hint { display: none; }
+  .report-paper { width: auto; min-height: 0; margin: 12px; padding: 20px 16px; }
+  .r-kpis { grid-template-columns: repeat(2, 1fr); }
+  .r-bar-cell { display: none; }
+}
+
+/* ---------- ตอนพิมพ์ ---------- */
+@page {
+  size: A4;
+  margin: 14mm;
+}
+
+@media print {
+  body { background: #fff; }
+  .report-toolbar { display: none; }
+  .report-paper {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-paper { animation: none; }
+}

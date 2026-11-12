@@ -256,8 +256,8 @@ function drawMonthlyChart(container, monthly) {
   }
 
   // กว้างเท่ากล่องจริง ตัวหนังสือจะได้ไม่เล็กลงบนจอมือถือ
-  const W = Math.min(900, Math.max(300, container.clientWidth || 640));
-  const H = 260;
+  const W = Math.min(1200, Math.max(300, container.clientWidth || 640));
+  const H = Math.round(Math.min(400, Math.max(240, W * 0.42))); // จอกว้าง กราฟสูงตาม
   const pad = { top: 28, right: 8, bottom: 46, left: 32 };
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
@@ -266,7 +266,7 @@ function drawMonthlyChart(container, monthly) {
   const top = Math.ceil(max / step) * step;
   const y = (value) => pad.top + plotH - (value / top) * plotH;
   const slot = plotW / monthly.length;
-  const barW = Math.min(56, slot * 0.5);
+  const barW = Math.min(88, slot * 0.5);
   const GAP = 2; // ช่องว่างระหว่างสองส่วนของแท่ง
 
   let grid = '';
@@ -363,6 +363,7 @@ function drawPulse(container, pulse, today) {
     .join('');
 
   container.removeAttribute('aria-busy');
+  container.dataset.weeks = weeks;
   container.innerHTML = `
     <div class="pulse-wrap">
       <div class="pulse-weekdays" aria-hidden="true">${WEEKDAY_SHORT.map((d, i) => `<span>${i % 2 === 1 ? d : ''}</span>`).join('')}</div>
@@ -388,12 +389,23 @@ function drawPulse(container, pulse, today) {
     cell.addEventListener('pointerleave', hideTooltip);
   });
 
+  sizePulse(container);
+
   // เลื่อนให้เห็นเดือนปัจจุบันบนจอเล็ก
   const todayCell = container.querySelector('.pulse-cell.today');
   if (todayCell) {
     const scroller = container.querySelector('.pulse-scroll');
     scroller.scrollLeft = Math.max(0, todayCell.offsetLeft - scroller.clientWidth / 2);
   }
+}
+
+// ช่องขยายเต็มความกว้างการ์ด (ไม่เล็กกว่า 18px ไม่ใหญ่กว่า 44px)
+function sizePulse(container) {
+  const scroller = container.querySelector('.pulse-scroll');
+  if (!scroller) return;
+  const weeks = Number(container.dataset.weeks);
+  const cell = Math.max(18, Math.min(52, Math.floor((scroller.clientWidth - (weeks - 1) * 4) / weeks)));
+  container.querySelector('.pulse-wrap').style.setProperty('--cell', `${cell}px`);
 }
 
 // ---------- 5) สมาชิกขาประจำ: โพเดียม 3 อันดับ + อันดับ 4-5 ----------
@@ -432,6 +444,203 @@ function podiumHtml(top, doneEvents) {
   return `<div class="podium">${podium}</div>${rest ? `<ol class="podium-rest">${rest}</ol>` : ''}`;
 }
 
+// ---------- 6) ความเคลื่อนไหวล่าสุด ----------
+const ACTIVITY_STYLE = {
+  funding: { icon: 'finance', label: 'รายรับ' },
+  expense: { icon: 'report', label: 'รายจ่าย' },
+  event: { icon: 'check', label: 'กิจกรรม' },
+  news: { icon: 'news', label: 'ข่าว' },
+};
+
+// "เมื่อวาน", "3 วันที่แล้ว", "2 ชั่วโมงที่แล้ว"
+function timeAgo(iso, nowIso) {
+  const seconds = (new Date(iso) - new Date(nowIso)) / 1000;
+  const format = new Intl.RelativeTimeFormat('th', { numeric: 'auto' });
+  const steps = [
+    ['day', 86400],
+    ['hour', 3600],
+    ['minute', 60],
+  ];
+  for (const [unit, size] of steps) {
+    if (Math.abs(seconds) >= size || unit === 'minute') {
+      if (unit === 'day' && Math.abs(seconds) >= 86400 * 30) return formatDate(iso);
+      return format.format(Math.round(seconds / size), unit);
+    }
+  }
+  return '';
+}
+
+function activityHtml(items, nowIso) {
+  if (!items || items.length === 0) return '<div class="state"><p>ยังไม่มีความเคลื่อนไหว</p></div>';
+  return `<ol class="timeline">${items
+    .map((item, index) => {
+      const style = ACTIVITY_STYLE[item.type] || ACTIVITY_STYLE.news;
+      const body = `<span class="timeline-title">${escapeHtml(item.title)}</span><span class="muted small">${escapeHtml(item.detail || '')}</span>`;
+      return `<li class="timeline-item type-${item.type}" style="--i:${index}">
+        <span class="timeline-dot" aria-hidden="true">${icon(style.icon)}</span>
+        <div class="timeline-body">
+          ${item.event_id ? `<a href="event.html?id=${encodeURIComponent(item.event_id)}">${body}</a>` : `<div>${body}</div>`}
+          <time class="muted small" datetime="${escapeHtml(item.at)}" title="${escapeHtml(formatDateLong(item.at))}">${style.label}, ${escapeHtml(timeAgo(item.at, nowIso))}</time>
+        </div>
+      </li>`;
+    })
+    .join('')}</ol>`;
+}
+
+// ---------- 7) โหมดพรีเซนต์: เอาการ์ดในหน้านี้ขึ้นเต็มจอทีละใบ วนเองทุก 8 วินาที ----------
+const SLIDE_SECONDS = 8;
+let presentation = null;
+
+function startPresentation(fromClick) {
+  if (presentation || !content.querySelector('.dash-hero')) return;
+
+  // สไลด์ = การ์ดในหน้า (ย้ายตัวจริงไปโชว์ แล้วย้ายกลับตอนจบ ตัวเลขนับถอยหลังเลยยังเดินอยู่)
+  const slides = [
+    { title: content.querySelector('.dash-hero-label') ? content.querySelector('.dash-hero-label').textContent.trim() : 'กิจกรรมถัดไป', nodes: [content.querySelector('.dash-hero')], width: 1200 },
+    { title: 'ตัวเลขหลัก', nodes: [...content.querySelectorAll('.kpi-card')], width: 1200, grid: true },
+    ...[...content.querySelectorAll('[data-slide]')].map((node) => ({ title: node.dataset.slide, nodes: [node], width: node.classList.contains('span-4') ? 720 : 1200 })),
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'present';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'โหมดพรีเซนต์');
+  overlay.innerHTML = `
+    <div class="present-glow" aria-hidden="true"></div>
+    <header class="present-top">
+      <img src="assets/logo-white.png" alt="SpeedX" class="present-logo">
+      <h2 class="present-title" aria-live="polite"></h2>
+      <span class="present-count num"></span>
+      <button type="button" class="present-button" data-act="prev" aria-label="สไลด์ก่อนหน้า">${icon('chevronLeft')}</button>
+      <button type="button" class="present-button" data-act="pause" aria-label="หยุดชั่วคราว">${icon('pause')}</button>
+      <button type="button" class="present-button" data-act="next" aria-label="สไลด์ถัดไป">${icon('chevronRight')}</button>
+      <button type="button" class="present-button" data-act="close" aria-label="ออกจากโหมดพรีเซนต์ (Esc)">${icon('close')}</button>
+    </header>
+    <div class="present-stage"></div>
+    <div class="present-dots">${slides.map((s, i) => `<button type="button" data-go="${i}" aria-label="ไปสไลด์ ${i + 1}: ${escapeHtml(s.title)}"></button>`).join('')}</div>
+    <div class="present-progress" aria-hidden="true"><span></span></div>`;
+  document.body.appendChild(overlay);
+
+  // ย้ายการ์ดเข้าแต่ละสไลด์ ทิ้งที่คั่นไว้ให้ย้ายกลับถูกที่
+  const placeholders = [];
+  const frames = slides.map((slide) => {
+    const frame = document.createElement('div');
+    frame.className = `present-frame${slide.grid ? ' present-grid' : ''}`;
+    frame.style.width = `${slide.width}px`;
+    slide.nodes.forEach((node) => {
+      const marker = document.createComment('slide');
+      node.before(marker);
+      placeholders.push([marker, node]);
+      frame.appendChild(node);
+    });
+    return frame;
+  });
+
+  const stage = overlay.querySelector('.present-stage');
+  const progress = overlay.querySelector('.present-progress span');
+  let index = 0;
+  let timer = null;
+  let paused = false;
+
+  function fit(frame) {
+    frame.style.zoom = 1;
+    const room = stage.getBoundingClientRect();
+    const zoom = Math.min((room.width * 0.94) / frame.offsetWidth, (room.height * 0.94) / frame.offsetHeight, 2);
+    frame.style.zoom = Math.max(0.5, zoom);
+  }
+
+  function show(next) {
+    index = (next + frames.length) % frames.length;
+    stage.replaceChildren(frames[index]); // ใส่ใหม่ = อนิเมชั่นในการ์ดเล่นใหม่
+    overlay.querySelector('.present-title').textContent = slides[index].title;
+    overlay.querySelector('.present-count').textContent = `${index + 1} / ${frames.length}`;
+    overlay.querySelectorAll('[data-go]').forEach((dot, i) => dot.setAttribute('aria-current', String(i === index)));
+    window.dispatchEvent(new Event('resize')); // ให้กราฟ / เส้นแสง วาดใหม่ตามขนาดในสไลด์
+    const pulse = frames[index].querySelector('#pulse-chart');
+    if (pulse) sizePulse(pulse);
+    const monthly = frames[index].querySelector('#monthly-chart');
+    if (monthly && lastData) drawMonthlyChart(monthly, lastData.monthly);
+    fit(frames[index]);
+    restartTimer();
+  }
+
+  function restartTimer() {
+    clearTimeout(timer);
+    progress.style.animation = 'none';
+    void progress.offsetWidth; // รีสตาร์ทแถบเวลา
+    progress.style.animation = paused ? 'none' : `present-progress ${SLIDE_SECONDS}s linear forwards`;
+    if (!paused) timer = setTimeout(() => show(index + 1), SLIDE_SECONDS * 1000);
+  }
+
+  function togglePause() {
+    paused = !paused;
+    const button = overlay.querySelector('[data-act="pause"]');
+    button.innerHTML = icon(paused ? 'play' : 'pause');
+    button.setAttribute('aria-label', paused ? 'เล่นต่อ' : 'หยุดชั่วคราว');
+    restartTimer();
+  }
+
+  function onKey(event) {
+    if (event.key === 'Escape') stop();
+    else if (event.key === 'ArrowRight' || event.key === 'PageDown') show(index + 1);
+    else if (event.key === 'ArrowLeft' || event.key === 'PageUp') show(index - 1);
+    else if (event.key === ' ') togglePause();
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onResize() {
+    fit(frames[index]);
+  }
+
+  function onFullscreenChange() {
+    if (!document.fullscreenElement) stop();
+  }
+
+  function stop() {
+    if (!presentation) return;
+    presentation = null;
+    clearTimeout(timer);
+    document.removeEventListener('keydown', onKey, true);
+    window.removeEventListener('resize', onResize);
+    document.removeEventListener('fullscreenchange', onFullscreenChange);
+    placeholders.forEach(([marker, node]) => marker.replaceWith(node));
+    overlay.remove();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    window.dispatchEvent(new Event('resize'));
+    const monthly = document.getElementById('monthly-chart');
+    if (monthly && lastData) drawMonthlyChart(monthly, lastData.monthly);
+    const pulse = document.getElementById('pulse-chart');
+    if (pulse) sizePulse(pulse);
+    document.getElementById('present-button').focus();
+  }
+
+  overlay.addEventListener('click', (event) => {
+    const go = event.target.closest('[data-go]');
+    if (go) show(Number(go.dataset.go));
+    const act = event.target.closest('[data-act]');
+    if (!act) return;
+    if (act.dataset.act === 'next') show(index + 1);
+    if (act.dataset.act === 'prev') show(index - 1);
+    if (act.dataset.act === 'pause') togglePause();
+    if (act.dataset.act === 'close') stop();
+  });
+  document.addEventListener('keydown', onKey, true);
+  window.addEventListener('resize', onResize);
+
+  presentation = { stop };
+  if (fromClick && document.documentElement.requestFullscreen) {
+    document.documentElement
+      .requestFullscreen()
+      .then(() => document.addEventListener('fullscreenchange', onFullscreenChange))
+      .catch(() => {});
+  }
+  show(0);
+  overlay.querySelector('[data-act="close"]').focus({ preventScroll: true });
+}
+
 // ---------- รวมทั้งหน้า ----------
 let lastData = null;
 
@@ -443,37 +652,53 @@ function renderDashboard(data) {
 
   content.innerHTML = `
     <div class="dash-greeting">
-      <h2>${greeting(data.now)}${firstName ? ` ${escapeHtml(firstName)}` : ''}</h2>
-      <p class="muted">${escapeHtml(formatDateLong(data.now))}</p>
+      <div>
+        <h2>${greeting(data.now)}${firstName ? ` ${escapeHtml(firstName)}` : ''}</h2>
+        <p class="muted">${escapeHtml(formatDateLong(data.now))}</p>
+      </div>
+      <div class="dash-actions">
+        <a class="btn btn-outline" href="report.html">${icon('report')}<span>ส่งออกรายงาน</span></a>
+        <button type="button" class="btn btn-primary" id="present-button">${icon('play')}<span>โหมดพรีเซนต์</span></button>
+      </div>
     </div>
     <div class="grid">
       ${heroHtml(data.next_event)}
       ${kpisHtml(data.kpis)}
 
-      <section class="card span-8">
+      <section class="card span-8" data-slide="คนเข้าร่วมกิจกรรมรายเดือน">
         <div class="card-header"><h2 class="card-title">คนเข้าร่วมกิจกรรมรายเดือน</h2></div>
         <div id="monthly-chart"></div>
       </section>
-      <section class="card span-4">
+      <section class="card span-4" data-slide="ประเภทกิจกรรม">
         <div class="card-header"><h2 class="card-title">ประเภทกิจกรรม</h2></div>
         <div id="category-chart" class="compact-pie"></div>
       </section>
 
-      <section class="card span-8">
+      <section class="card span-8" data-slide="ชีพจรชมรม">
         <div class="card-header dash-header-wrap">
           <h2 class="card-title">ชีพจรชมรม</h2>
           <span class="muted small">แต่ละช่องคือ 1 วัน สีเข้มขึ้นตามจำนวนคน</span>
         </div>
         <div id="pulse-chart"></div>
       </section>
-      <section class="card span-4">
+      <section class="card span-4" data-slide="สมาชิกขาประจำ">
         <div class="card-header">
           <h2 class="card-title">สมาชิกขาประจำ</h2>
           <a class="text-link small" href="members.html">ดูทั้งหมด</a>
         </div>
         ${podiumHtml(data.top_members, data.done_events)}
       </section>
+
+      <section class="card span-12" data-slide="ความเคลื่อนไหวล่าสุด">
+        <div class="card-header">
+          <h2 class="card-title">ความเคลื่อนไหวล่าสุด</h2>
+          <span class="muted small">รวมจากทุกแท็บในชีต ใหม่สุดอยู่บน</span>
+        </div>
+        ${activityHtml(data.activity, data.now)}
+      </section>
     </div>`;
+
+  document.getElementById('present-button').addEventListener('click', () => startPresentation(true));
 
   animateCounters(content);
   startCountdown(data.next_event);
@@ -504,6 +729,8 @@ let lastChartWidth = 0;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
+    const pulse = document.getElementById('pulse-chart');
+    if (pulse) sizePulse(pulse);
     const box = document.getElementById('monthly-chart');
     if (!box || !lastData || box.clientWidth === lastChartWidth) return;
     lastChartWidth = box.clientWidth;
@@ -515,6 +742,11 @@ async function loadDashboard() {
   renderLoading(content, 8);
   try {
     renderDashboard(await apiRequest('/api/overview'));
+    // เปิดมาจากค้นหาด่วน (dashboard.html?present=1) → เข้าโหมดพรีเซนต์เลย
+    if (new URLSearchParams(window.location.search).get('present') === '1') {
+      history.replaceState(null, '', 'dashboard.html');
+      setTimeout(() => startPresentation(false), 900);
+    }
   } catch (error) {
     renderError(content, error.message, loadDashboard);
   }

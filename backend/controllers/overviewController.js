@@ -29,7 +29,7 @@ function eachDay(startKey, endKey) {
 // GET /api/overview
 async function getOverview(req, res, next) {
   try {
-    const { members, events, attendance, funding, expenses } = await getClubData();
+    const { members, events, attendance, funding, expenses, news } = await getClubData();
     const now = getNow();
 
     const activeMembers = members.filter((m) => m.membership_status === 'active');
@@ -134,8 +134,21 @@ async function getOverview(req, res, next) {
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count);
 
+    // ---------- ความเคลื่อนไหวล่าสุด: รวมเหตุการณ์ที่มีวันเวลาจากทุกแท็บ เรียงใหม่สุดก่อน ----------
+    const eventTitle = (id) => (events.find((e) => e.event_id === id) || {}).title || '';
+    const activity = [
+      ...funding.map((f) => ({ type: 'funding', at: f.received_date, title: `ได้รับเงิน ฿${f.amount.toLocaleString('th-TH')}`, detail: f.source_name })),
+      ...expenses.map((x) => ({ type: 'expense', at: x.paid_date, title: `จ่าย ฿${x.amount.toLocaleString('th-TH')} ค่า${x.category}`, detail: [x.description, eventTitle(x.event_id)].filter(Boolean).join(' สำหรับ '), event_id: x.event_id })),
+      ...doneEvents.map((e) => ({ type: 'event', at: e.end_at || e.start_at, title: `จัด${e.title}เสร็จแล้ว`, detail: `มีคนมาจริง ${countFor(e.event_id, ATTENDED)} คน ที่${e.location}`, event_id: e.event_id })),
+      ...news.map((n) => ({ type: 'news', at: n.published_at, title: n.title, detail: n.news_type, event_id: n.event_id })),
+    ]
+      .filter((item) => item.at && new Date(item.at) <= now)
+      .sort((a, b) => new Date(b.at) - new Date(a.at))
+      .slice(0, 10);
+
     res.json({
       now: now.toISOString(),
+      activity,
       today: bangkokDateKey(now),
       kpis,
       next_event: next,

@@ -108,6 +108,17 @@ async function loadEvents() {
   }
 }
 
+// ส่งออก CSV: เฉพาะกิจกรรมที่ตรงกับคำค้นและตัวกรองตอนนี้
+document.getElementById('export-events-slot').outerHTML = exportButtonHtml('export-events');
+document.getElementById('export-events').addEventListener('click', () => {
+  const events = getVisibleEvents();
+  downloadCsv(
+    'events',
+    ['รหัส', 'ชื่อกิจกรรม', 'วันที่', 'เวลา', 'ประเภท', 'สถานที่', 'ฝ่ายที่จัด', 'สถานะ', 'ผู้เข้าร่วมจริง (คน)', 'ใช้จ่ายจริง (บาท)'],
+    events.map((e) => [e.event_id, e.title, formatDateRange(e.start_at, e.end_at), formatTimeRange(e.start_at, e.end_at), e.category, e.location, e.organizer, e.status, e.attendee_count, e.actual_spent])
+  );
+});
+
 searchInput.addEventListener('input', renderTable);
 renderFilterMenu();
 loadEvents();

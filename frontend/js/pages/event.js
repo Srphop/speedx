@@ -82,6 +82,10 @@ function renderDetail(data) {
           <div><dt>ฝ่ายที่จัด</dt><dd>${escapeHtml(e.organizer)}</dd></div>
           <div><dt>งบที่วางแผนไว้</dt><dd class="num">${escapeHtml(formatMoney(e.planned_budget))}</dd></div>
         </dl>
+        <div class="calendar-actions">
+          <a class="btn btn-outline btn-small" href="${escapeHtml(googleCalendarUrl(e))}" target="_blank" rel="noopener">${icon('calendar')}<span>Google Calendar</span></a>
+          <button type="button" class="btn btn-outline btn-small" id="download-ics">${icon('download')}<span>ไฟล์ปฏิทิน .ics</span></button>
+        </div>
       </section>
     </div>
 
@@ -98,6 +102,8 @@ function renderDetail(data) {
         <div id="budget-chart"></div>
       </section>
     </div>`;
+
+  document.getElementById('download-ics').addEventListener('click', () => downloadIcs(e));
 
   drawPieChart(
     document.getElementById('budget-chart'),

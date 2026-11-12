@@ -27,6 +27,58 @@ function getNotifications() {
   return notificationsRequest;
 }
 
+// ---------- เปลี่ยนหน้าแบบมีทิศทาง ----------
+// ไปเมนูที่อยู่ล่างกว่า → เนื้อหาเลื่อนขึ้นมาจากข้างล่าง, ไปเมนูข้างบน → เลื่อนลงมาจากข้างบน
+// (หน้าเก่าจดลำดับตัวเองไว้ตอนออก หน้าใหม่เอามาเทียบ แล้วติดป้าย data-nav-dir ให้ CSS เลือกท่า)
+const NAV_FROM_KEY = 'speedx-nav-from';
+
+function pageRank(path) {
+  const file = (path.split('/').pop() || 'dashboard.html').split(/[?#]/)[0];
+  if (file === 'event.html') return NAV_ITEMS.findIndex((item) => item.key === 'events') + 0.5; // หน้ารายละเอียด = ลึกกว่าหน้ากิจกรรม
+  return NAV_ITEMS.findIndex((item) => item.href === file);
+}
+
+(function setupPageDirection() {
+  window.addEventListener('pageswap', () => {
+    try {
+      sessionStorage.setItem(NAV_FROM_KEY, String(pageRank(window.location.pathname)));
+    } catch (error) {
+      // เบราว์เซอร์ไม่ให้ใช้ storage ก็แค่ไม่มีทิศทาง
+    }
+  });
+
+  let from = null;
+  try {
+    from = sessionStorage.getItem(NAV_FROM_KEY);
+    sessionStorage.removeItem(NAV_FROM_KEY);
+  } catch (error) {
+    return;
+  }
+  const to = pageRank(window.location.pathname);
+  if (from === null || to < 0 || Number(from) < 0 || Number(from) === to) return;
+
+  const root = document.documentElement;
+  root.dataset.navDir = to > Number(from) ? 'down' : 'up';
+  const clear = () => delete root.dataset.navDir;
+  window.addEventListener('pagereveal', (event) => {
+    if (event.viewTransition) event.viewTransition.finished.then(clear, clear);
+    else clear();
+  }, { once: true });
+  setTimeout(clear, 1500);
+})();
+
+// โหลดหน้าในเมนูไว้ล่วงหน้าตอนชี้เมาส์ค้าง → กดแล้วเปลี่ยนหน้าไวขึ้น (Chrome / Edge)
+function addNavPrefetch() {
+  if (document.querySelector('script[type="speculationrules"]')) return;
+  if (!(HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))) return;
+  const rules = document.createElement('script');
+  rules.type = 'speculationrules';
+  rules.textContent = JSON.stringify({
+    prefetch: [{ source: 'list', urls: NAV_ITEMS.map((item) => item.href), eagerness: 'moderate' }],
+  });
+  document.head.appendChild(rules);
+}
+
 function logout() {
   clearSession();
   window.location.href = 'login.html';
@@ -41,6 +93,8 @@ function renderSidebar() {
       </a>
     </li>`
   ).join('');
+
+  addNavPrefetch();
 
   const user = getSavedUser() || { name: 'ผู้ใช้', email: '' };
   const sidebar = document.getElementById('sidebar');

@@ -66,7 +66,7 @@ function renderFinance(data) {
       </section>
 
       <section class="card span-12">
-        <div class="card-header"><h2 class="card-title">ค่าใช้จ่ายรายกิจกรรม</h2></div>
+        <div class="card-header"><h2 class="card-title">ค่าใช้จ่ายรายกิจกรรม</h2>${exportButtonHtml('export-finance')}</div>
         ${
           data.spending_by_event.length === 0
             ? '<div class="state"><p>ยังไม่มีค่าใช้จ่ายของกิจกรรมใด</p></div>'
@@ -114,7 +114,20 @@ function renderFinance(data) {
 async function loadFinance() {
   renderLoading(content, 8);
   try {
-    renderFinance(await apiRequest('/api/finance'));
+    const data = await apiRequest('/api/finance');
+    renderFinance(data);
+    // ส่งออก CSV: สรุปการเงินครบทุกส่วนในไฟล์เดียว
+    document.getElementById('export-finance').addEventListener('click', () => {
+      const rows = [
+        ['สรุป', 'งบทั้งหมด', '', data.total_funding, ''],
+        ['สรุป', 'ใช้ไปแล้ว', '', data.total_spent, `${data.used_percent}%`],
+        ['สรุป', 'งบคงเหลือ', '', data.remaining, ''],
+        ...data.funding_sources.map((f) => ['แหล่งเงิน', f.source_name, f.source_type, f.amount, `ใช้ไป ${f.spent}`]),
+        ...data.spending_by_category.map((c) => ['ใช้จ่ายตามหมวด', c.category, '', c.amount, `${c.percent}%`]),
+        ...data.spending_by_event.map((e) => ['รายกิจกรรม', e.title, formatDate(e.start_at), e.amount, `งบที่วางไว้ ${e.planned_budget}`]),
+      ];
+      downloadCsv('finance', ['ส่วน', 'รายการ', 'รายละเอียด', 'จำนวนเงิน (บาท)', 'หมายเหตุ'], rows);
+    });
   } catch (error) {
     renderError(content, error.message, loadFinance);
   }

@@ -191,6 +191,17 @@ function flashLinkedMember() {
   row.classList.add('row-flash');
 }
 
+// ---------- ส่งออก CSV: เฉพาะสมาชิกที่ตรงกับตัวกรองตอนนี้ ----------
+document.getElementById('export-members-slot').outerHTML = exportButtonHtml('export-members');
+document.getElementById('export-members').addEventListener('click', () => {
+  const members = getVisibleMembers();
+  downloadCsv(
+    'members',
+    ['รหัสสมาชิก', 'ชื่อ', 'คณะ', 'ชั้นปี', 'ฝ่าย', 'เข้าร่วมกิจกรรมจริง (ครั้ง)'],
+    members.map((m) => [m.member_id, m.name, m.faculty, m.study_year, m.department, m.attended_count])
+  );
+});
+
 // ---------- ลบสมาชิก (เปลี่ยนสถานะเป็น inactive ใน Google Sheet) ----------
 function openRemoveDialog(id, name) {
   memberToRemove = { id, name };
