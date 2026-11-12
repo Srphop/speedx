@@ -12,6 +12,7 @@ async function getNews(req, res, next) {
         return {
           ...item,
           event_title: event ? event.title : null, // ข่าวที่ผูกกับกิจกรรม กดแล้วไปหน้ากิจกรรมนั้น
+          event_category: event ? event.category : null, // ใช้เลือกรูปประกอบข่าว
         };
       })
       .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));

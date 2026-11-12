@@ -140,7 +140,8 @@ async function createTab(tabName) {
 }
 
 // เพิ่มแถวใหม่ท้ายแท็บ เช่น appendRow('Users', ['U-1', 'ชื่อ', ...])
-async function appendRow(tabName, values) {
+// options.asTyped = true → ให้ Google แปลงค่าเหมือนพิมพ์เอง (เช่น "2026-11-20 13:00" กลายเป็นวันที่)
+async function appendRow(tabName, values, options = {}) {
   if (!isUsingGoogleSheets()) {
     const sheet = getLocalSheet();
     if (!sheet[tabName]) sheet[tabName] = [];
@@ -153,7 +154,7 @@ async function appendRow(tabName, values) {
     await getSheetsApi().spreadsheets.values.append({
       spreadsheetId: SHEET_ID(),
       range: `${tabName}!A1`,
-      valueInputOption: 'RAW',
+      valueInputOption: options.asTyped ? 'USER_ENTERED' : 'RAW',
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values: [values] },
     });
@@ -182,4 +183,28 @@ async function writeCell(tabName, columnLetter, rowNumber, value) {
   }
 }
 
-module.exports = { isUsingGoogleSheets, readAllTabs, readTab, appendRow, writeCell };
+// เขียนทั้งคอลัมน์ทีเดียว เช่น writeColumn('Events', 'K', ['objective', 'ข้อ 1', ...]) = K1, K2, ...
+async function writeColumn(tabName, columnLetter, values) {
+  if (!isUsingGoogleSheets()) {
+    const rows = getLocalSheet()[tabName];
+    values.forEach((value, index) => {
+      if (!rows[index]) rows[index] = [];
+      rows[index][columnIndex(columnLetter)] = value;
+    });
+    saveLocalSheet();
+    return;
+  }
+
+  try {
+    await getSheetsApi().spreadsheets.values.update({
+      spreadsheetId: SHEET_ID(),
+      range: `${tabName}!${columnLetter}1:${columnLetter}${values.length}`,
+      valueInputOption: 'RAW',
+      requestBody: { values: values.map((value) => [value]) },
+    });
+  } catch (cause) {
+    throw sheetsError('บันทึก', cause);
+  }
+}
+
+module.exports = { isUsingGoogleSheets, readAllTabs, readTab, appendRow, writeCell, writeColumn };

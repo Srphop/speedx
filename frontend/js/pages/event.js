@@ -24,6 +24,41 @@ function attendeesHtml(data) {
     .join('');
 }
 
+// รายการแบบมีไอคอนนำหน้า (วัตถุประสงค์ / สิ่งที่ทำในกิจกรรม)
+function listHtml(items, iconName, className) {
+  return `<ul class="${className}">${items
+    .map((item) => `<li>${icon(iconName)}<span>${escapeHtml(item)}</span></li>`)
+    .join('')}</ul>`;
+}
+
+// การ์ด "เกี่ยวกับกิจกรรม": ทำอะไร มีวัตถุประสงค์อะไร ใครเข้าร่วมได้
+function aboutHtml(e) {
+  const objectives = e.objectives && e.objectives.length > 0
+    ? listHtml(e.objectives, 'check', 'about-list')
+    : '<p class="muted small">ยังไม่ได้ระบุ เพิ่มได้ในคอลัมน์ objective ของแท็บ Events</p>';
+
+  const highlights = e.highlights && e.highlights.length > 0
+    ? listHtml(e.highlights, 'chevronRight', 'about-list')
+    : '<p class="muted small">ยังไม่ได้ระบุ เพิ่มได้ในคอลัมน์ highlights ของแท็บ Events</p>';
+
+  return `
+    <section class="card span-8 stack-md">
+      <div class="card-header"><h2 class="card-title">เกี่ยวกับกิจกรรม</h2></div>
+      ${e.description ? `<p class="event-description">${escapeHtml(e.description)}</p>` : ''}
+      <div class="about-grid">
+        <div>
+          <h3 class="about-heading">วัตถุประสงค์</h3>
+          ${objectives}
+        </div>
+        <div>
+          <h3 class="about-heading">สิ่งที่ทำในกิจกรรม</h3>
+          ${highlights}
+        </div>
+      </div>
+      ${e.target_group ? `<p class="target-group"><span class="muted">กลุ่มเป้าหมาย</span> <strong>${escapeHtml(e.target_group)}</strong></p>` : ''}
+    </section>`;
+}
+
 function renderDetail(data) {
   const e = data.event;
   document.title = `${e.title} | SpeedX`;
@@ -34,17 +69,21 @@ function renderDetail(data) {
       ${statusBadge(e.status)}
     </div>
 
-    <section class="card" style="margin-bottom:24px">
-      <dl class="detail-list">
-        <div><dt>วันที่</dt><dd>${escapeHtml(formatDateLong(e.start_at))}</dd></div>
-        <div><dt>เวลา</dt><dd class="num">${escapeHtml(formatTimeRange(e.start_at, e.end_at))}</dd></div>
-        <div><dt>สถานที่</dt><dd>${escapeHtml(e.location)}</dd></div>
-        <div><dt>ประเภท</dt><dd>${escapeHtml(e.category)}</dd></div>
-        <div><dt>ฝ่ายที่จัด</dt><dd>${escapeHtml(e.organizer)}</dd></div>
-        <div><dt>งบที่วางแผนไว้</dt><dd class="num">${escapeHtml(formatMoney(e.planned_budget))}</dd></div>
-      </dl>
-      ${e.description ? `<p class="muted" style="margin-top:16px">${escapeHtml(e.description)}</p>` : ''}
-    </section>
+    <div class="grid" style="margin-bottom:24px">
+      ${aboutHtml(e)}
+      <section class="card span-4 stack-md">
+        <div class="card-header"><h2 class="card-title">ข้อมูลกิจกรรม</h2></div>
+        <dl class="detail-list" style="grid-template-columns:1fr">
+          <div><dt>วันที่</dt><dd>${escapeHtml(formatDateRangeLong(e.start_at, e.end_at))}</dd></div>
+          ${isMultiDay(e.start_at, e.end_at) ? `<div><dt>ระยะเวลา</dt><dd>${countDays(e.start_at, e.end_at)} วัน</dd></div>` : ''}
+          <div><dt>เวลา</dt><dd class="num">${escapeHtml(formatTimeRange(e.start_at, e.end_at))}</dd></div>
+          <div><dt>สถานที่</dt><dd>${escapeHtml(e.location)}</dd></div>
+          <div><dt>ประเภท</dt><dd>${escapeHtml(e.category)}</dd></div>
+          <div><dt>ฝ่ายที่จัด</dt><dd>${escapeHtml(e.organizer)}</dd></div>
+          <div><dt>งบที่วางแผนไว้</dt><dd class="num">${escapeHtml(formatMoney(e.planned_budget))}</dd></div>
+        </dl>
+      </section>
+    </div>
 
     <div class="grid">
       <section class="card span-6">

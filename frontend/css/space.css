@@ -1,0 +1,346 @@
+/* =========================================================
+   หน้าเข้าสู่ระบบ / สมัครบัญชี: ฝั่งซ้ายเป็นอวกาศ + โลโก้ SpeedX
+   ดาวพุ่งเข้าหาจอ ดาวตก วาดใน js/space.js
+   ส่วนลำแสง แสงเรือง วงโคจร แสงวิ่งผ่านโลโก้ อยู่ในไฟล์นี้
+   ========================================================= */
+
+/* การ์ดใหญ่: มีขอบขาวรอบรูปฝั่งซ้าย (gap) แบบตัวอย่าง */
+.auth-card {
+  padding: 20px;
+  border-radius: 28px;
+  min-height: 720px;
+  box-shadow: 0 24px 60px rgba(27, 31, 32, 0.08);
+}
+
+/* ---------- ฝั่งซ้าย: อวกาศ ---------- */
+.auth-visual {
+  border-radius: 20px;
+  padding: 40px;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 25% 15%, #1b2c66 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, #3d1460 0%, transparent 50%),
+    #04050d;
+}
+
+/* ไล่เข้มด้านล่าง ให้อ่านข้อความออก */
+.auth-visual::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  background: linear-gradient(transparent, rgba(4, 5, 13, 0.92));
+  z-index: 0;
+  pointer-events: none;
+}
+
+.space-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ลำแสงหมุนช้า ๆ รอบจอ */
+.space-beams {
+  position: absolute;
+  inset: -50%;
+  z-index: 0;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    rgba(160, 236, 41, 0.1) 14deg,
+    transparent 34deg,
+    transparent 120deg,
+    rgba(120, 150, 255, 0.1) 140deg,
+    transparent 165deg,
+    transparent 230deg,
+    rgba(200, 120, 255, 0.08) 250deg,
+    transparent 275deg
+  );
+  pointer-events: none;
+}
+
+/* แสงเรืองแบบเนบิวลา */
+.space-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.space-glow-1 { width: 320px; height: 320px; background: #a0ec29; top: 22%; left: 18%; opacity: 0.16; }
+.space-glow-2 { width: 420px; height: 420px; background: #6b46b0; bottom: -12%; right: -18%; opacity: 0.45; }
+.space-glow-3 { width: 300px; height: 300px; background: #305eaa; top: -12%; right: 4%; opacity: 0.45; }
+
+/* โลโก้ตรงกลาง + วงโคจร */
+.space-center {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 76%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+
+.space-logo-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.space-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 18px rgba(160, 236, 41, 0.45));
+}
+
+/* แสงวิ่งผ่านตัวโลโก้ (ตัดเป็นรูปโลโก้ด้วย mask) */
+.space-logo-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.95) 50%, transparent 62%);
+  background-size: 300% 100%;
+  background-position: 150% 0;
+  -webkit-mask: url('../assets/logo-original.png') center / contain no-repeat;
+  mask: url('../assets/logo-original.png') center / contain no-repeat;
+  pointer-events: none;
+}
+
+.space-orbit-tilt {
+  position: absolute;
+  width: 118%;
+  aspect-ratio: 1;
+  transform: rotate(-14deg) scaleY(0.3);
+  pointer-events: none;
+}
+
+.space-orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 30px rgba(160, 236, 41, 0.15);
+}
+
+.space-orbit-dot {
+  position: absolute;
+  top: -6px;
+  left: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #a0ec29;
+  box-shadow: 0 0 16px 6px rgba(160, 236, 41, 0.7);
+}
+
+.auth-visual-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- ฝั่งขวา: ฟอร์ม ---------- */
+.auth-form {
+  gap: 18px;
+}
+
+.auth-form-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.auth-form-header .auth-logo {
+  width: 150px;
+  margin-bottom: 18px;
+}
+
+.auth-subtitle {
+  color: var(--muted);
+}
+
+.auth-page .input {
+  min-height: 50px;
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+
+.auth-page .input:focus {
+  border-color: var(--text);
+}
+
+.auth-page .password-wrap .input {
+  padding-right: 52px;
+}
+
+.auth-page .password-wrap .icon-button {
+  top: 3px;
+  right: 3px;
+}
+
+.auth-page .btn-primary {
+  min-height: 52px;
+  border-radius: 999px;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.auth-switch {
+  text-align: center;
+  color: var(--muted);
+}
+
+@media (max-width: 767px) {
+  .auth-card {
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* ---------- warp เต็มจอ (ตอนกดเข้าสู่ระบบ / สมัคร) ---------- */
+.warp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 50% 50%, #141b42 0%, #04050d 70%);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.warp-overlay.visible {
+  opacity: 1;
+}
+
+.warp-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.warp-center {
+  position: relative;
+  width: min(560px, 72vw);
+  text-align: center;
+  transform: scale(0.75);
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.warp-overlay.visible .warp-center {
+  transform: scale(1);
+}
+
+.warp-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(160, 236, 41, 0.75));
+  animation: space-pulse 1.2s ease-in-out infinite;
+}
+
+.warp-text {
+  margin-top: 22px;
+  color: #f2f5f3;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.warp-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0%, rgba(160, 236, 41, 0.7) 35%, rgba(4, 5, 13, 0) 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* สำเร็จ: โลโก้หดนิดหนึ่งแล้วพุ่งเข้าหาจอ แสงขาวแฟลช */
+.warp-overlay.jumping .warp-center {
+  animation: warp-jump 0.9s cubic-bezier(0.6, 0, 0.9, 0.4) forwards;
+}
+
+.warp-overlay.jumping .warp-flash {
+  animation: warp-flash 0.9s ease-in forwards;
+}
+
+@keyframes warp-jump {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.9); }
+  100% { transform: scale(7); opacity: 0; }
+}
+
+@keyframes warp-flash {
+  0%, 45% { opacity: 0; }
+  100% { opacity: 1; transform: scale(2.5); }
+}
+
+/* ---------- การเคลื่อนไหว ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .space-beams {
+    animation: space-spin 40s linear infinite;
+  }
+
+  .space-glow-1 { animation: space-drift 9s ease-in-out infinite alternate; }
+  .space-glow-2 { animation: space-drift 12s ease-in-out infinite alternate-reverse; }
+  .space-glow-3 { animation: space-drift 10s ease-in-out infinite alternate; }
+
+  .space-logo-wrap {
+    animation: space-float 6s ease-in-out infinite;
+  }
+
+  .space-logo {
+    animation: space-pulse 3s ease-in-out infinite;
+  }
+
+  .space-logo-wrap::after {
+    animation: space-shine 4s ease-in-out infinite 1s;
+  }
+
+  .space-orbit {
+    animation: space-spin 7s linear infinite;
+  }
+
+  .space-center {
+    animation: space-arrive 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes space-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes space-drift {
+    to { transform: translate(40px, -30px) scale(1.15); }
+  }
+
+  @keyframes space-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  @keyframes space-pulse {
+    0%, 100% { filter: drop-shadow(0 0 14px rgba(160, 236, 41, 0.35)); }
+    50% { filter: drop-shadow(0 0 30px rgba(160, 236, 41, 0.75)); }
+  }
+
+  @keyframes space-shine {
+    0% { background-position: 150% 0; }
+    45%, 100% { background-position: -50% 0; }
+  }
+
+  /* โลโก้พุ่งเข้ามาจากไกล ๆ ตอนเปิดหน้า */
+  @keyframes space-arrive {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.4); filter: blur(8px); }
+  }
+}

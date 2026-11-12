@@ -3,16 +3,32 @@
 // เปิดครั้งแรก = สว่าง, หลังจากนั้นจำธีมที่เลือกไว้ (ในเครื่อง + ในบัญชีผู้ใช้)
 const THEME_KEY = 'speedx-theme';
 
+// ธีมทั้งหมด: สว่าง / มืด + ธีมเทศกาล (ธีมเทศกาลมีเอฟเฟกต์วิ่ง ดู seasonal.js)
+const THEMES = [
+  { id: 'light', label: 'สว่าง', icon: 'sun' },
+  { id: 'dark', label: 'มืด', icon: 'moon' },
+  { id: 'halloween', label: 'ฮาโลวีน', icon: 'pumpkin' },
+  { id: 'valentine', label: 'วาเลนไทน์', icon: 'heart' },
+  { id: 'christmas', label: 'คริสต์มาส', icon: 'tree' },
+];
+
+function isKnownTheme(id) {
+  return THEMES.some((theme) => theme.id === id);
+}
+
 function getSavedTheme() {
   try {
-    return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+    const saved = localStorage.getItem(THEME_KEY);
+    return isKnownTheme(saved) ? saved : 'light';
   } catch (error) {
     return 'light';
   }
 }
 
 function applyTheme(theme) {
+  if (!isKnownTheme(theme)) theme = 'light';
   document.documentElement.setAttribute('data-theme', theme);
+  if (typeof startSeasonEffect === 'function') startSeasonEffect(theme); // เอฟเฟกต์ของธีมเทศกาล
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch (error) {

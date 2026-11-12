@@ -65,8 +65,11 @@ function renderTable() {
   const rows = events
     .map(
       (e) => `<tr class="clickable" tabindex="0" data-id="${escapeHtml(e.event_id)}">
-        <td><strong>${escapeHtml(e.title)}</strong></td>
-        <td class="num">${escapeHtml(formatDate(e.start_at))}<div class="muted small">${escapeHtml(formatTimeRange(e.start_at, e.end_at))}</div></td>
+        <td>
+          <strong>${escapeHtml(e.title)}</strong>
+          ${e.description ? `<div class="muted small row-description">${escapeHtml(e.description)}</div>` : ''}
+        </td>
+        <td class="num">${escapeHtml(formatDateRange(e.start_at, e.end_at))}<div class="muted small">${escapeHtml(formatTimeRange(e.start_at, e.end_at))}${isMultiDay(e.start_at, e.end_at) ? ` (${countDays(e.start_at, e.end_at)} วัน)` : ''}</div></td>
         <td><span class="tag">${escapeHtml(e.category)}</span></td>
         <td>${statusBadge(e.status)}</td>
         <td class="row-arrow">${icon('chevronRight')}</td>

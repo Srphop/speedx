@@ -6,6 +6,7 @@
 Final Project วิชา 2110221 โจทย์ P4 Club Activity Dashboard
 
 - **Live:** https://speedx-o1po.onrender.com
+- **GitHub:** https://github.com/Srphop/speedx
 
 ## เปิดเว็บในเครื่อง (ไม่ต้องตั้งค่าอะไร)
 

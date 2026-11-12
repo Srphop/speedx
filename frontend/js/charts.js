@@ -110,7 +110,7 @@ function drawPieChart(container, items, options = {}) {
   container.removeAttribute('aria-busy');
   container.innerHTML = `
     <div class="chart-layout">
-      <svg class="chart-svg" viewBox="0 0 220 220" role="img" aria-label="${escapeHtml(options.title || 'กราฟ')} รายละเอียดอยู่ในตารางสีข้างกราฟ">
+      <svg class="chart-svg ${items.length === 1 ? 'single' : ''}" viewBox="0 0 220 220" role="img" aria-label="${escapeHtml(options.title || 'กราฟ')} รายละเอียดอยู่ในตารางสีข้างกราฟ">
         ${sweepMask}<g mask="url(#${maskId})">${slices.join('')}</g>${center}
       </svg>
       <ul class="legend">${legend}</ul>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+<style>
+.shake{transform-origin:150px 210px;animation:shake .5s ease-in-out infinite}
+.wave{transform-origin:240px 210px;animation:wave 1.5s ease-out infinite}
+.v2{animation-delay:.5s}.v3{animation-delay:1s}
+.streak{animation:streak 1.3s linear infinite}
+.s2{animation-delay:-.4s}.s3{animation-delay:-.9s}
+.day{animation:day 1s steps(2,end) infinite}
+.swoosh{stroke-dasharray:900;animation:swoosh 3s ease-in-out infinite}
+.cal{transform-origin:455px 200px;animation:float 3s ease-in-out infinite}
+@keyframes shake{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes wave{0%{transform:scale(.6);opacity:0}20%{opacity:1}100%{transform:scale(1.6);opacity:0}}
+@keyframes streak{from{transform:translate(-500px,280px)}to{transform:translate(700px,-420px)}}
+@keyframes day{0%{fill:#A0EC29}100%{fill:#F2F5F3}}
+@keyframes swoosh{0%{stroke-dashoffset:900}50%,100%{stroke-dashoffset:0}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(3deg)}50%{transform:translateY(-12px) rotate(-2deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;stroke-dashoffset:0!important}}
+</style>
+<rect width="640" height="400" fill="#1B1F20"/>
+<path class="swoosh" d="M-20 360 C200 290 420 170 660 -10" stroke="#A0EC29" stroke-width="20" fill="none" stroke-linecap="round" opacity=".9"/>
+<g stroke="#F2F5F3" stroke-width="3" stroke-linecap="round" opacity=".45"><path class="streak" d="M0 0 l60 -40"/><path class="streak s2" d="M80 60 l90 -60"/><path class="streak s3" d="M-60 120 l70 -46"/></g>
+<g fill="none" stroke="#A0EC29" stroke-width="7" stroke-linecap="round"><path class="wave" d="M250 160 a70 70 0 0 1 0 100"/><path class="wave v2" d="M250 160 a70 70 0 0 1 0 100"/><path class="wave v3" d="M250 160 a70 70 0 0 1 0 100"/></g>
+<g class="shake" stroke="#1B1F20" stroke-width="5" stroke-linejoin="round"><path d="M110 190 L230 130 V290 L110 230 Z" fill="#A0EC29"/><rect x="80" y="186" width="34" height="48" rx="6" fill="#F2F5F3"/><path d="M130 236 L150 300 H178 L162 246" fill="#F2F5F3"/></g>
+<g class="cal" stroke="#F2F5F3" stroke-width="4" stroke-linejoin="round"><rect x="360" y="100" width="190" height="200" rx="14" fill="#24292A"/><rect x="360" y="100" width="190" height="50" rx="14" fill="#A0EC29"/><path d="M405 86v32M505 86v32" stroke-linecap="round"/>
+<g stroke="none" fill="#F2F5F3"><rect x="390" y="172" width="30" height="26" rx="4"/><rect x="440" y="172" width="30" height="26" rx="4"/><rect class="day" x="490" y="172" width="30" height="26" rx="4"/><rect x="390" y="216" width="30" height="26" rx="4"/><rect x="440" y="216" width="30" height="26" rx="4"/><rect x="490" y="216" width="30" height="26" rx="4"/><rect x="390" y="258" width="30" height="26" rx="4" opacity=".4"/></g></g>
+</svg>

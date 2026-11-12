@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+<style>
+.c{transform-box:fill-box;transform-origin:center}
+.bal{animation:rise 6s linear infinite}
+.b2{animation-delay:-2s}.b3{animation-delay:-4s}.b4{animation-delay:-1s}.b5{animation-delay:-3.2s}
+.burst{transform-origin:320px 200px;animation:burst 2s ease-out infinite}
+.word{transform-origin:320px 330px;animation:beat 1s ease-in-out infinite}
+.ring{transform-origin:320px 200px;animation:ring 2s ease-out infinite}
+@keyframes rise{0%{transform:translateY(460px) translateX(0)}50%{transform:translateY(160px) translateX(20px)}100%{transform:translateY(-200px) translateX(0)}}
+@keyframes burst{0%{transform:scale(.2);opacity:1}80%{opacity:1}100%{transform:scale(1.5);opacity:0}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(1)}45%{transform:scale(1.06)}}
+@keyframes ring{0%{transform:scale(.3);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="640" height="400" fill="#8B2549"/>
+<circle class="ring" cx="320" cy="200" r="80" fill="none" stroke="#FFE08A" stroke-width="6"/>
+<g class="burst"><rect x="316" y="60" width="8" height="30" rx="3" fill="#A0EC29"/><rect x="316" y="310" width="8" height="30" rx="3" fill="#FFE08A"/><rect x="180" y="196" width="30" height="8" rx="3" fill="#F6B9C8"/><rect x="430" y="196" width="30" height="8" rx="3" fill="#A0EC29"/><rect x="214" y="100" width="8" height="28" rx="3" fill="#FFE08A" transform="rotate(-45 218 114)"/><rect x="418" y="100" width="8" height="28" rx="3" fill="#F6B9C8" transform="rotate(45 422 114)"/><rect x="214" y="272" width="8" height="28" rx="3" fill="#A0EC29" transform="rotate(45 218 286)"/><rect x="418" y="272" width="8" height="28" rx="3" fill="#FFE08A" transform="rotate(-45 422 286)"/></g>
+<g stroke="#1B1F20" stroke-width="3">
+<g class="bal"><path d="M90 60 q-6 40 4 80" fill="none"/><ellipse cx="90" cy="20" rx="34" ry="42" fill="#A0EC29"/></g>
+<g class="bal b2"><path d="M200 60 q8 40 -4 80" fill="none"/><ellipse cx="200" cy="20" rx="30" ry="38" fill="#FFE08A"/></g>
+<g class="bal b3"><path d="M440 60 q-6 40 4 80" fill="none"/><ellipse cx="440" cy="20" rx="34" ry="42" fill="#305EAA"/></g>
+<g class="bal b4"><path d="M550 60 q8 40 -4 80" fill="none"/><ellipse cx="550" cy="20" rx="30" ry="38" fill="#F6B9C8"/></g>
+<g class="bal b5"><path d="M330 60 q-6 40 4 80" fill="none"/><ellipse cx="330" cy="20" rx="28" ry="36" fill="#A0EC29"/></g>
+</g>
+<g class="word"><rect x="160" y="302" width="320" height="56" rx="28" fill="#1B1F20"/><text x="320" y="340" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="28" font-weight="800" fill="#A0EC29">WELCOME</text></g>
+</svg>

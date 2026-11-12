@@ -66,23 +66,34 @@ function dateTileHtml(iso) {
   </time>`;
 }
 
+// รูปประกอบข่าว: ถ้าในชีตใส่ลิงก์รูปไว้ (คอลัมน์ cover_image_url) ใช้รูปนั้น
+// ถ้าไม่มี ใช้ภาพวาดตามประเภทกิจกรรมใน assets/news/
+const NEWS_ILLUSTRATIONS = {
+  'จิตอาสา': 'volunteer',
+  'ให้ความรู้': 'learning',
+  'สานสัมพันธ์': 'social',
+  'รับน้อง': 'welcome',
+};
+
+function coverImageUrl(item) {
+  if (item.cover_image_url) return item.cover_image_url;
+  const name = NEWS_ILLUSTRATIONS[item.event_category] || 'announcement';
+  return `assets/news/${name}.svg`;
+}
+
 function newsItemHtml(item) {
-  const title = item.event_id
-    ? `<a href="event.html?id=${encodeURIComponent(item.event_id)}">${escapeHtml(item.title)}</a>`
-    : escapeHtml(item.title);
-
-  const cover = item.cover_image_url
-    ? `<img class="news-cover" src="${escapeHtml(item.cover_image_url)}" alt="" loading="lazy">`
-    : '';
-
-  const eventLink = item.event_id
-    ? `<a class="text-link" href="event.html?id=${encodeURIComponent(item.event_id)}">ดูกิจกรรม ${escapeHtml(item.event_title || '')}</a>`
+  const link = item.event_id ? `event.html?id=${encodeURIComponent(item.event_id)}` : null;
+  const title = link ? `<a href="${link}">${escapeHtml(item.title)}</a>` : escapeHtml(item.title);
+  const eventLink = link
+    ? `<a class="text-link" href="${link}">ดูกิจกรรม ${escapeHtml(item.event_title || '')}</a>`
     : '';
 
   return `
     <article class="news-item">
-      ${dateTileHtml(item.published_at)}
-      ${cover}
+      <div class="news-cover-wrap">
+        <img class="news-cover" src="${escapeHtml(coverImageUrl(item))}" alt="" loading="lazy">
+        ${dateTileHtml(item.published_at)}
+      </div>
       <div class="news-body">
         <div class="news-meta">
           <span class="tag">${escapeHtml(item.news_type)}</span>

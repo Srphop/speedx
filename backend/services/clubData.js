@@ -1,12 +1,12 @@
 // ===== แปลงข้อมูลดิบจากชีตให้เป็น object ที่ใช้ง่าย + กติกากลางของระบบ =====
-const { readAllTabs, writeCell } = require('./googleSheets');
+const { readAllTabs, writeCell, appendRow } = require('./googleSheets');
 const { toIsoDate, daysUntil } = require('../utils/time');
 
 const REMINDER_DAYS = 3; // แจ้งเตือนกิจกรรมที่จะเริ่มภายใน 3 วัน
 const BUDGET_ALERT_RATIO = 0.8; // แจ้งเตือนเมื่อใช้งบเกิน 80%
 const ATTENDED = 'เข้าร่วมจริง';
 const REGISTERED = 'ลงชื่อแล้ว';
-const CACHE_MS = 5 * 1000; // จำข้อมูลไว้ 30 วินาที จะได้ไม่เรียก Google ถี่เกิน
+const CACHE_MS = 5 * 1000; // จำข้อมูลไว้ 5 วินาที จะได้ไม่เรียก Google ถี่เกิน
 
 let cachedData = null;
 let cachedAt = 0;
@@ -20,6 +20,14 @@ function toNumber(value) {
 
 function toText(value) {
   return value === null || value === undefined ? '' : String(value).trim();
+}
+
+// ข้อความหลายบรรทัดในช่องเดียว (กด Alt+Enter ในชีต) → รายการ ['ข้อ 1', 'ข้อ 2']
+function toLines(value) {
+  return toText(value)
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*([-•]|\d+[.)])\s*/, '').trim())
+    .filter(Boolean);
 }
 
 // [[หัวตาราง], [แถว], ...] → [{ หัวตาราง: ค่า, _row: เลขแถวในชีต }, ...]
@@ -47,6 +55,7 @@ function columnLetter(index) {
 async function loadFromSheet() {
   const tabs = await readAllTabs();
   const membersHeader = (tabs.Members[0] || []).map(toText);
+  const eventsHeader = (tabs.Events[0] || []).map(toText);
 
   return {
     // สมาชิก: เลือกเฉพาะช่องที่หน้าเว็บใช้ (ไม่ส่งที่อยู่ / ข้อมูลสุขภาพ ออกไป)
@@ -72,7 +81,12 @@ async function loadFromSheet() {
       department: toText(row.department),
       planned_budget: toNumber(row.planned_budget),
       event_status: toText(row.event_status),
+      // คอลัมน์เสริม (ถ้ามีในชีต): วัตถุประสงค์ / สิ่งที่ทำในกิจกรรม / กลุ่มเป้าหมาย
+      objectives: toLines(row.objective),
+      highlights: toLines(row.highlights),
+      target_group: toText(row.target_group),
     })),
+    eventsHeader,
 
     attendance: rowsToObjects(tabs.Attendance).map((row) => ({
       event_id: toText(row.event_id),
@@ -116,6 +130,9 @@ async function getClubData() {
   if (!cacheStillFresh) {
     cachedData = await loadFromSheet();
     cachedAt = Date.now();
+    console.log(
+      `อ่านจากชีต: สมาชิก ${cachedData.members.length} คน, กิจกรรม ${cachedData.events.length} รายการ, ข่าว ${cachedData.news.length} ข่าว`
+    );
   }
   return cachedData;
 }
@@ -130,6 +147,23 @@ async function setMemberStatus(memberId, status) {
   await writeCell('Members', data.memberStatusColumn, member._row, status);
   cachedData = null;
   return { ...member, membership_status: status };
+}
+
+// เพิ่มกิจกรรมใหม่เป็นแถวใหม่ในแท็บ Events (เรียงค่าตามหัวตารางของชีต)
+async function createEvent(fields) {
+  cachedData = null;
+  const data = await getClubData();
+
+  // รหัสถัดไป: EVT-008 → EVT-009
+  const lastNumber = Math.max(0, ...data.events.map((e) => Number(e.event_id.replace(/\D/g, '')) || 0));
+  const eventId = `EVT-${String(lastNumber + 1).padStart(3, '0')}`;
+
+  const values = { event_id: eventId, ...fields, event_status: 'วางแผนไว้' };
+  const row = data.eventsHeader.map((key) => (values[key] === undefined ? '' : values[key]));
+  await appendRow('Events', row, { asTyped: true });
+
+  cachedData = null;
+  return values;
 }
 
 // ---------- กติกาสถานะกิจกรรม ----------
@@ -168,6 +202,7 @@ module.exports = {
   BUDGET_ALERT_RATIO,
   getClubData,
   setMemberStatus,
+  createEvent,
   isUpcoming,
   getDisplayStatus,
   sumBy,

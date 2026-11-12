@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+<style>
+.c{transform-box:fill-box;transform-origin:center}
+.rays{transform-origin:520px 80px;animation:spin 18s linear infinite}
+.recycle{transform-origin:320px 250px;animation:spin 4s linear infinite}
+.leaf{animation:blow 3.4s linear infinite}
+.l2{animation-delay:-1.1s}.l3{animation-delay:-2.3s}
+.leafin{transform-box:fill-box;transform-origin:center;animation:spin 1.2s linear infinite}
+.toss{animation:toss 2.4s ease-in infinite}
+.lid{transform-box:fill-box;transform-origin:0% 100%;animation:lid 2.4s ease-in-out infinite}
+.wind{stroke-dasharray:60 260;animation:wind 1.6s linear infinite}
+.w2{animation-delay:-.8s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blow{0%{transform:translate(-120px,40px)}50%{transform:translate(340px,-20px)}100%{transform:translate(780px,30px)}}
+@keyframes toss{0%{transform:translate(-210px,40px) rotate(0);opacity:0}10%{opacity:1}60%{transform:translate(-60px,-120px) rotate(200deg)}85%,100%{transform:translate(0,0) rotate(360deg);opacity:0}}
+@keyframes lid{0%,55%,100%{transform:rotate(0)}70%{transform:rotate(-38deg)}85%{transform:rotate(0)}}
+@keyframes wind{to{stroke-dashoffset:-320}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="640" height="400" fill="#1F4D16"/>
+<g class="rays" fill="#A0EC29" opacity=".18"><path d="M520 80 L700 40 L700 120Z"/><path d="M520 80 L560 -100 L480 -100Z"/><path d="M520 80 L340 40 L340 120Z"/><path d="M520 80 L560 260 L480 260Z"/><path d="M520 80 L660 -60 L700 0Z"/><path d="M520 80 L380 220 L340 160Z"/></g>
+<circle cx="520" cy="80" r="40" fill="#FFE08A"/>
+<path d="M0 330 Q200 290 400 320 T640 300 V400 H0Z" fill="#163A10"/>
+<g fill="none" stroke="#DDF2D8" stroke-width="3" stroke-linecap="round" opacity=".55"><path class="wind" d="M20 120 C 160 100, 260 140, 420 110"/><path class="wind w2" d="M60 190 C 200 170, 300 210, 460 180"/></g>
+<circle cx="320" cy="250" r="92" fill="#DDF2D8"/>
+<g class="recycle" fill="none" stroke="#2E6B1C" stroke-width="14" stroke-linecap="round"><path d="M268 270 a55 55 0 0 1 22 -66"/><path d="M340 196 a55 55 0 0 1 32 60"/><path d="M350 304 a55 55 0 0 1 -66 4"/></g>
+<g class="recycle" fill="#2E6B1C"><path d="M290 190 l22 16 -26 12z"/><path d="M382 266 l-6 26 -20 -18z"/><path d="M270 318 l-24 -12 22 -16z"/></g>
+<g stroke="#1B1F20" stroke-width="4" stroke-linejoin="round"><path d="M500 260 H580 L572 360 H508Z" fill="#F2F5F3"/><g class="lid"><rect x="492" y="244" width="96" height="16" rx="5" fill="#A0EC29"/></g></g>
+<g transform="translate(540 250)"><rect class="toss" x="-8" y="-14" width="16" height="28" rx="4" fill="#305EAA"/></g>
+<g><g class="leaf"><path class="leafin" d="M0 0 C20 -20 50 -10 56 -30 C30 -36 6 -24 0 0Z" fill="#A0EC29"/></g><g class="leaf l2"><path class="leafin" d="M0 60 C18 42 44 50 50 32 C26 26 6 38 0 60Z" fill="#5E9F26"/></g><g class="leaf l3"><path class="leafin" d="M0 120 C20 100 50 110 56 90 C30 84 6 96 0 120Z" fill="#B9E37C"/></g></g>
+</svg>

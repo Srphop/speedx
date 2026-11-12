@@ -21,6 +21,15 @@ if (!process.env.JWT_SECRET) {
 
 app.use(express.json());
 
+// แสดงใน terminal ทุกครั้งที่หน้าเว็บเรียก API
+app.use('/api', (req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.originalUrl} → ${res.statusCode} (${Date.now() - start} ms)`);
+  });
+  next();
+});
+
 // ---------- backend ----------
 app.get('/api/health', (req, res) => {
   res.json({

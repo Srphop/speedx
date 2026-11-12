@@ -37,6 +37,7 @@ function setSubmitting(submitting, label) {
   const hint = document.getElementById('wake-hint');
   button.disabled = submitting;
   button.textContent = submitting ? 'กำลังดำเนินการ…' : label;
+  document.dispatchEvent(new CustomEvent('space-warp', { detail: submitting })); // ดาวเร่งเป็น warp (space.js)
 
   clearTimeout(setSubmitting.timer);
   hint.hidden = true;
@@ -47,5 +48,9 @@ function setSubmitting(submitting, label) {
 function finishLogin(result) {
   saveSession(result.token, result.user);
   applyTheme(result.user.theme || 'light');
-  window.location.href = 'news.html';
+
+  // โลโก้พุ่งเข้าหาจอ + แฟลช (space.js) แล้วค่อยเปลี่ยนหน้า
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.dispatchEvent(new CustomEvent('space-jump'));
+  setTimeout(() => (window.location.href = 'news.html'), reduceMotion ? 0 : 900);
 }

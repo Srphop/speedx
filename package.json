@@ -5,7 +5,8 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node --dns-result-order=ipv4first backend/server.js",
-    "dev": "node --watch backend/server.js"
+    "dev": "node --watch backend/server.js",
+    "add-event-details": "node --dns-result-order=ipv4first backend/scripts/add-event-details.js"
   },
   "engines": {
     "node": ">=18"

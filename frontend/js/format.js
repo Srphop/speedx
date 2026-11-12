@@ -43,6 +43,35 @@ function bangkokParts(iso) {
   return { year: get('year'), month: get('month'), day: get('day') };
 }
 
+// วันที่แบบไทยเป็นข้อความ "YYYY-MM-DD" ไว้เทียบว่าวันเดียวกันไหม
+function bangkokDateKey(iso) {
+  const p = bangkokParts(iso);
+  return `${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`;
+}
+
+// กิจกรรมหลายวันไหม (วันจบคนละวันกับวันเริ่ม)
+function isMultiDay(startIso, endIso) {
+  return Boolean(startIso && endIso) && bangkokDateKey(startIso) !== bangkokDateKey(endIso);
+}
+
+// "14 พ.ย. 2026" หรือ "20 พ.ย. 2026 – 22 พ.ย. 2026"
+function formatDateRange(startIso, endIso) {
+  return isMultiDay(startIso, endIso) ? `${formatDate(startIso)} – ${formatDate(endIso)}` : formatDate(startIso);
+}
+
+// แบบยาว ใช้ในหน้ารายละเอียด
+function formatDateRangeLong(startIso, endIso) {
+  return isMultiDay(startIso, endIso)
+    ? `${formatDateLong(startIso)} ถึง ${formatDateLong(endIso)}`
+    : formatDateLong(startIso);
+}
+
+// จำนวนวันของกิจกรรม (นับรวมวันแรกและวันสุดท้าย)
+function countDays(startIso, endIso) {
+  if (!isMultiDay(startIso, endIso)) return 1;
+  return Math.round((new Date(bangkokDateKey(endIso)) - new Date(bangkokDateKey(startIso))) / 86400000) + 1;
+}
+
 // สถานะกิจกรรม → class สี (ป้ายต้องมีข้อความเสมอ ไม่ใช้สีอย่างเดียว)
 const STATUS_CLASS = {
   'ใกล้ถึง': 'status-upcoming',

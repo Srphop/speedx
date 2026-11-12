@@ -20,12 +20,84 @@
       <header class="main-header" id="main-header"></header>
       <main class="scroll-area" id="main-content">
         <div class="grid">
-          <section class="card span-8 stack-md">
+          <section class="card span-12 stack-md" id="calendar-card">
             <div class="calendar-controls" id="calendar-controls"></div>
             <div id="calendar-body"></div>
           </section>
-          <aside class="card span-4 stack-md event-panel" id="event-panel" aria-live="polite"></aside>
+          <aside class="card span-4 stack-md event-panel" id="event-panel" aria-live="polite" hidden></aside>
         </div>
+
+        <dialog class="dialog dialog-form" id="add-dialog" aria-labelledby="add-dialog-heading">
+          <form id="add-form" novalidate>
+            <div class="card-header">
+              <h2 class="card-title" id="add-dialog-heading">เพิ่มกิจกรรม</h2>
+              <button type="button" class="icon-button" id="add-close" aria-label="ปิด"></button>
+            </div>
+            <div class="form-grid">
+              <div class="field span-full">
+                <label for="add-title">ชื่อกิจกรรม</label>
+                <input class="input" id="add-title" name="title" type="text" autocomplete="off" required aria-describedby="add-title-error">
+                <p class="field-error" id="add-title-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-category">ประเภท</label>
+                <select class="select" id="add-category" name="category"></select>
+                <p class="field-error" id="add-category-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-department">ฝ่ายที่จัด</label>
+                <select class="select" id="add-department" name="department"></select>
+                <p class="field-error" id="add-department-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-date">วันที่เริ่ม</label>
+                <input class="input" id="add-date" name="date" type="date" required aria-describedby="add-date-error">
+                <p class="field-error" id="add-date-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-end_date">วันที่จบ</label>
+                <input class="input" id="add-end_date" name="end_date" type="date" required aria-describedby="add-end_date-hint add-end_date-error">
+                <p class="form-hint" id="add-end_date-hint">กิจกรรมวันเดียว ให้เป็นวันเดียวกับวันที่เริ่ม</p>
+                <p class="field-error" id="add-end_date-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-start_time">เวลาเริ่ม</label>
+                <input class="input" id="add-start_time" name="start_time" type="time" required aria-describedby="add-start_time-error">
+                <p class="field-error" id="add-start_time-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-end_time">เวลาจบ</label>
+                <input class="input" id="add-end_time" name="end_time" type="time" required aria-describedby="add-end_time-error">
+                <p class="field-error" id="add-end_time-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-location">สถานที่</label>
+                <input class="input" id="add-location" name="location" type="text" autocomplete="off" required aria-describedby="add-location-error">
+                <p class="field-error" id="add-location-error"></p>
+              </div>
+              <div class="field">
+                <label for="add-planned_budget">งบที่วางแผนไว้ (บาท)</label>
+                <input class="input" id="add-planned_budget" name="planned_budget" type="number" min="0" step="100" inputmode="numeric" aria-describedby="add-planned_budget-error">
+                <p class="field-error" id="add-planned_budget-error"></p>
+              </div>
+              <div class="field span-full">
+                <label for="add-description">รายละเอียดกิจกรรม</label>
+                <textarea class="input" id="add-description" name="description" rows="3"></textarea>
+                <p class="field-error" id="add-description-error"></p>
+              </div>
+              <div class="field span-full">
+                <label for="add-objective">วัตถุประสงค์</label>
+                <textarea class="input" id="add-objective" name="objective" rows="3"></textarea><p class="form-hint">บรรทัดละ 1 ข้อ</p>
+                <p class="field-error" id="add-objective-error"></p>
+              </div>
+            </div>
+            <p class="form-message" id="add-message" role="alert"></p>
+            <div class="dialog-actions">
+              <button type="button" class="btn btn-outline" id="add-cancel">ยกเลิก</button>
+              <button type="submit" class="btn btn-primary" id="add-submit">เพิ่มกิจกรรม</button>
+            </div>
+          </form>
+        </dialog>
       </main>
     </div>
   </div>
@@ -37,7 +109,10 @@
   <script src="js/ui.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/animations.js"></script>
+  <script src="js/seasonal.js"></script>
+  <script src="js/cursor-fx.js"></script>
   <script src="js/layout.js"></script>
+  <script src="js/account.js"></script>
   <script src="js/pages/calendar.js"></script>
   <div id="page-ready" hidden></div>
 </body>

@@ -3,6 +3,7 @@ const {
   ATTENDED,
   REGISTERED,
   getClubData,
+  createEvent,
   getDisplayStatus,
   sumBy,
   withPercent,
@@ -20,6 +21,7 @@ async function getEvents(req, res, next) {
         event_id: event.event_id,
         title: event.title,
         category: event.category,
+        description: event.description,
         start_at: event.start_at,
         end_at: event.end_at,
         location: event.location,
@@ -91,6 +93,9 @@ async function getEventById(req, res, next) {
         organizer: event.department,
         planned_budget: event.planned_budget,
         status: getDisplayStatus(event, getNow()),
+        objectives: event.objectives,
+        highlights: event.highlights,
+        target_group: event.target_group,
       },
       attendee_total: attendeeRows.length,
       registered_total: attendance.filter(
@@ -105,4 +110,48 @@ async function getEventById(req, res, next) {
   }
 }
 
-module.exports = { getEvents, getEventById };
+// POST /api/events → เพิ่มกิจกรรมใหม่ลงชีต (จากหน้าแผนกิจกรรมรายปี)
+// body: { title, category, date: "2026-11-20", end_date: "2026-11-22" (ไม่ใส่ = วันเดียว),
+//         start_time: "13:00", end_time: "16:00", location, department, planned_budget, description, objective }
+async function addEvent(req, res, next) {
+  try {
+    const body = req.body;
+    const text = (key) => String(body[key] || '').trim();
+
+    // ตรวจทีละช่อง แล้วบอกว่าช่องไหนผิด
+    const errors = {};
+    if (!text('title')) errors.title = 'กรุณากรอกชื่อกิจกรรม';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(text('date'))) errors.date = 'กรุณาเลือกวันที่';
+    if (!/^\d{2}:\d{2}$/.test(text('start_time'))) errors.start_time = 'กรุณาเลือกเวลาเริ่ม';
+    const endDate = text('end_date') || text('date'); // กิจกรรมหลายวัน: วันที่จบ
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate)) errors.end_date = 'กรุณาเลือกวันที่จบ';
+    else if (endDate < text('date')) errors.end_date = 'วันที่จบต้องไม่ก่อนวันที่เริ่ม';
+    if (!/^\d{2}:\d{2}$/.test(text('end_time'))) errors.end_time = 'กรุณาเลือกเวลาจบ';
+    else if (endDate === text('date') && text('end_time') <= text('start_time')) errors.end_time = 'เวลาจบต้องหลังเวลาเริ่ม';
+    if (!text('location')) errors.location = 'กรุณากรอกสถานที่';
+    const budget = Number(body.planned_budget || 0);
+    if (!Number.isFinite(budget) || budget < 0) errors.planned_budget = 'งบต้องเป็นตัวเลข 0 ขึ้นไป';
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'ข้อมูลไม่ครบหรือไม่ถูกต้อง', errors });
+    }
+
+    const event = await createEvent({
+      title: text('title'),
+      category: text('category') || 'อื่น ๆ',
+      description: text('description'),
+      start_at: `${text('date')} ${text('start_time')}:00`, // เวลาไทย แบบที่พิมพ์ในชีต
+      end_at: `${endDate} ${text('end_time')}:00`,
+      location: text('location'),
+      department: text('department'),
+      planned_budget: budget,
+      objective: text('objective'),
+    });
+
+    res.status(201).json({ message: `เพิ่ม ${event.title} ลงปฏิทินแล้ว`, event_id: event.event_id });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { getEvents, getEventById, addEvent };

@@ -49,7 +49,7 @@ function renderSidebar() {
     <nav><ul class="nav-list">${links}</ul></nav>
     <div class="sidebar-bottom">
       <div class="sidebar-user">
-        <span class="avatar" aria-hidden="true">${escapeHtml(getInitials(user.name))}</span>
+        <span id="sidebar-avatar" aria-hidden="true">${avatarHtml(user)}</span>
         <div style="min-width:0">
           <div class="sidebar-user-name">${escapeHtml(user.name)}</div>
           <div class="sidebar-user-email">${escapeHtml(user.email)}</div>
@@ -68,7 +68,13 @@ function renderHeader() {
     <button type="button" class="icon-button menu-button" id="menu-button" aria-label="เปิดเมนู" aria-expanded="false">${icon('menu')}</button>
     <h1 class="page-title">${escapeHtml(document.body.dataset.title)}</h1>
     <div class="header-actions">
-      <button type="button" class="icon-button" id="theme-button"></button>
+      <div class="popover-anchor">
+        <button type="button" class="icon-button" id="theme-button" aria-haspopup="menu" aria-expanded="false"></button>
+        <div class="popover theme-popover" id="theme-popover" role="menu" hidden>
+          <p class="popover-title">ธีม</p>
+          <div id="theme-options"></div>
+        </div>
+      </div>
 
       <div class="popover-anchor">
         <button type="button" class="icon-button" id="bell-button" aria-label="การแจ้งเตือน" aria-expanded="false">
@@ -82,48 +88,61 @@ function renderHeader() {
 
       <div class="popover-anchor">
         <button type="button" class="icon-button" id="account-button" aria-label="บัญชีของฉัน" aria-expanded="false">
-          <span class="avatar">${escapeHtml(getInitials(user.name))}</span>
+          <span class="avatar-wrap" id="header-avatar"></span>
         </button>
-        <div class="popover" id="account-popover" hidden style="width:260px">
-          <div class="popover-item" style="cursor:default">
-            <strong>${escapeHtml(user.name)}</strong>
-            <span class="muted small">${escapeHtml(user.email)}</span>
-          </div>
-          <button type="button" class="popover-item menu-option" id="account-logout">ออกจากระบบ ${icon('logout')}</button>
+        <div class="popover account-popover" id="account-popover" role="menu" hidden>
+          <div id="account-menu"></div>
         </div>
       </div>
     </div>`;
 
   setupThemeButton();
   setupPopover(document.getElementById('bell-button'), document.getElementById('bell-popover'));
-  setupPopover(document.getElementById('account-button'), document.getElementById('account-popover'));
-  document.getElementById('account-logout').addEventListener('click', logout);
+  setupAccountMenu(); // เมนูบัญชี: โปรไฟล์ / รหัสผ่าน / คีย์ลัด / เกี่ยวกับ (ดู account.js)
   setupDrawer();
 }
 
-// ปุ่มสลับธีม: เปลี่ยนทันที แล้วบันทึกลงบัญชีผู้ใช้ (แท็บ Users ในชีต)
+// เมนูเลือกธีม: เปลี่ยนทันที แล้วบันทึกลงบัญชีผู้ใช้ (แท็บ Users ในชีต)
 function setupThemeButton() {
   const button = document.getElementById('theme-button');
+  const popover = document.getElementById('theme-popover');
+  const options = document.getElementById('theme-options');
+  const closeMenu = setupPopover(button, popover);
 
-  function updateButton(theme) {
-    const isDark = theme === 'dark';
-    button.innerHTML = icon(isDark ? 'sun' : 'moon');
-    button.setAttribute('aria-label', isDark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+  function render(current) {
+    const active = THEMES.find((theme) => theme.id === current) || THEMES[0];
+    button.innerHTML = icon(active.icon);
+    button.setAttribute('aria-label', `เลือกธีม (ตอนนี้: ${active.label})`);
+
+    options.innerHTML = THEMES.map(
+      (theme) => `<button type="button" class="popover-item menu-option" role="menuitemradio"
+        aria-checked="${theme.id === current}" data-theme-id="${theme.id}">
+        <span class="theme-option-label">${icon(theme.icon)} ${theme.label}</span>
+        ${theme.id === current ? icon('check') : ''}
+      </button>`
+    ).join('');
+
+    options.querySelectorAll('[data-theme-id]').forEach((option) =>
+      option.addEventListener('click', () => choose(option.dataset.themeId))
+    );
   }
 
-  button.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  function choose(next) {
+    closeMenu();
+    if (next === document.documentElement.getAttribute('data-theme')) return;
+
     switchThemeWithReveal(next, button); // สีใหม่กระจายเป็นวงกลมจากปุ่ม (ดู animations.js)
-    updateButton(next);
+    render(next);
+    button.focus();
 
     const user = getSavedUser();
     if (user) saveSession(getToken(), { ...user, theme: next });
     apiRequest('/api/auth/me/theme', { method: 'PATCH', body: { theme: next } }).catch(() => {
       // บันทึกลงบัญชีไม่สำเร็จ ธีมในเครื่องยังเปลี่ยนแล้ว ไม่ต้องรบกวนผู้ใช้
     });
-  });
+  }
 
-  updateButton(document.documentElement.getAttribute('data-theme'));
+  render(document.documentElement.getAttribute('data-theme'));
 }
 
 // เมนูแบบลิ้นชักบนจอเล็ก
