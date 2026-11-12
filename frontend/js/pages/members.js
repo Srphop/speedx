@@ -70,17 +70,28 @@ function renderChart(byFaculty) {
   });
 }
 
-async function loadMembers() {
-  renderLoading(tableBox, 6);
-  renderLoading(chartBox, 3);
+let lastData = ''; // ข้อมูลรอบล่าสุด ไว้เทียบว่าชีตเปลี่ยนไหม
+
+// quiet = true คือโหลดเงียบ ๆ เบื้องหลัง (ไม่โชว์แถบโหลด ไม่โชว์ error)
+async function loadMembers(quiet = false) {
+  if (!quiet) {
+    renderLoading(tableBox, 6);
+    renderLoading(chartBox, 3);
+  }
   try {
     const data = await apiRequest('/api/members');
+
+    // ข้อมูลเหมือนเดิม ไม่ต้องวาดใหม่ (ตารางกับกราฟจะได้ไม่กระพริบ)
+    if (quiet && JSON.stringify(data) === lastData) return;
+    lastData = JSON.stringify(data);
+
     totalText.innerHTML = `<span data-count="${data.total}">${data.total}</span> คน`;
     animateCounters(totalText);
     renderTable(data.members);
     renderChart(data.by_faculty);
   } catch (error) {
-    renderError(tableBox, error.message, loadMembers);
+    if (quiet) return;
+    renderError(tableBox, error.message, () => loadMembers());
     chartBox.innerHTML = '';
   }
 }
@@ -123,3 +134,8 @@ document.getElementById('remove-confirm').addEventListener('click', async (event
 });
 
 loadMembers();
+
+// เช็กข้อมูลใหม่จากชีตทุก 10 วินาที แก้ในชีตแล้วหน้าเว็บอัปเดตเอง ไม่ต้องกดรีเฟรช
+setInterval(() => {
+  if (!dialog.open && document.visibilityState === 'visible') loadMembers(true);
+}, 10000);
