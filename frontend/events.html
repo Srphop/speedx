@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>กิจกรรม | SpeedX</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/theme.js"></script>
+  <link rel="expect" href="#page-ready" blocking="render">
+</head>
+<body data-nav="events" data-title="กิจกรรม">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="main-header" id="main-header"></header>
+      <main class="scroll-area" id="main-content">
+        <section class="card">
+          <div class="toolbar">
+            <div class="search-box">
+              <label class="visually-hidden" for="event-search">ค้นหาชื่อกิจกรรม</label>
+              <span id="search-icon"></span>
+              <input class="input" id="event-search" type="search" placeholder="ค้นหาชื่อกิจกรรม" autocomplete="off">
+            </div>
+            <div class="popover-anchor">
+              <button type="button" class="btn btn-outline" id="filter-button" aria-haspopup="menu" aria-expanded="false"></button>
+              <div class="popover filter-popover" id="filter-popover" role="menu" hidden></div>
+            </div>
+          </div>
+          <div id="event-table"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/format.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/pages/events.js"></script>
+  <div id="page-ready" hidden></div>
+</body>
+</html>

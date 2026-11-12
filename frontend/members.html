@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>สมาชิก | SpeedX</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/theme.js"></script>
+  <link rel="expect" href="#page-ready" blocking="render">
+</head>
+<body data-nav="members" data-title="สมาชิก">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="main-header" id="main-header"></header>
+      <main class="scroll-area" id="main-content">
+        <div class="grid">
+          <section class="card span-8 stack-md">
+            <div class="card-header">
+              <h2 class="card-title">รายชื่อสมาชิก</h2>
+              <span class="muted" id="member-total"></span>
+            </div>
+            <div id="member-table"></div>
+          </section>
+          <section class="card span-4 stack-md">
+            <div class="card-header"><h2 class="card-title">สัดส่วนสมาชิกตามคณะ</h2></div>
+            <div id="faculty-chart"></div>
+          </section>
+        </div>
+
+        <dialog class="dialog" id="remove-dialog" aria-labelledby="remove-title">
+          <h2 class="card-title" id="remove-title">ลบสมาชิก</h2>
+          <p id="remove-text" style="margin-top:8px"></p>
+          <p class="field-error" id="remove-error" role="alert"></p>
+          <div class="dialog-actions">
+            <button type="button" class="btn btn-outline" id="remove-cancel">ยกเลิก</button>
+            <button type="button" class="btn btn-danger" id="remove-confirm">ลบสมาชิก</button>
+          </div>
+        </dialog>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/format.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/pages/members.js"></script>
+  <div id="page-ready" hidden></div>
+</body>
+</html>

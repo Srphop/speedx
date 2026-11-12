@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>แผนกิจกรรมรายปี | SpeedX</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/theme.js"></script>
+  <link rel="expect" href="#page-ready" blocking="render">
+</head>
+<body data-nav="calendar" data-title="แผนกิจกรรมรายปี">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="main-header" id="main-header"></header>
+      <main class="scroll-area" id="main-content">
+        <div class="grid">
+          <section class="card span-8 stack-md">
+            <div class="calendar-controls" id="calendar-controls"></div>
+            <div id="calendar-body"></div>
+          </section>
+          <aside class="card span-4 stack-md event-panel" id="event-panel" aria-live="polite"></aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/format.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/pages/calendar.js"></script>
+  <div id="page-ready" hidden></div>
+</body>
+</html>

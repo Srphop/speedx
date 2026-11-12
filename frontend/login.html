@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เข้าสู่ระบบ | SpeedX</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+  <main class="auth-page">
+    <div class="auth-card">
+      <section class="auth-visual">
+        <svg class="speed-lines" viewBox="0 0 600 680" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <path d="M-40 330 C 180 240, 380 100, 660 -140" stroke="#A0EC29" stroke-width="28" fill="none" stroke-linecap="round" pathLength="1"/>
+          <path d="M-40 380 C 200 290, 420 150, 660 -60" stroke="#A0EC29" stroke-width="6" fill="none" stroke-linecap="round" pathLength="1" opacity="0.55"/>
+          <path d="M-40 270 C 160 190, 340 70, 660 -200" stroke="#A0EC29" stroke-width="3" fill="none" stroke-linecap="round" pathLength="1" opacity="0.35"/>
+          <path d="M-40 420 C 220 340, 450 210, 660 20" stroke="#F2F5F3" stroke-width="2" fill="none" stroke-linecap="round" pathLength="1" opacity="0.18"/>
+        </svg>
+        <div class="auth-visual-text">
+          <h2>ข่าว กิจกรรม สมาชิก และงบของชมรม ในที่เดียว</h2>
+          <p>ข้อมูลอัปเดตตรงจาก Google Sheet ของชมรม ทีมงานทุกคนเห็นตัวเลขชุดเดียวกัน</p>
+        </div>
+      </section>
+      <section class="auth-form-panel">
+        <form class="auth-form" id="login-form" novalidate>
+          <img class="auth-logo logo-light-mode" src="assets/logo-charcoal.png" alt="SpeedX">
+          <img class="auth-logo logo-dark-mode" src="assets/logo-original.png" alt="SpeedX">
+          <h1>เข้าสู่ระบบ</h1>
+          <p class="form-message" id="form-message" role="alert"></p>
+          <div class="field">
+            <label for="email">อีเมล</label>
+            <input class="input" id="email" name="email" type="email" autocomplete="email" aria-describedby="email-error" required>
+            <p class="field-error" id="email-error"></p>
+          </div>
+          <div class="field">
+            <label for="password">รหัสผ่าน</label>
+            <div class="password-wrap">
+              <input class="input" id="password" name="password" type="password" autocomplete="current-password" aria-describedby="password-error" required>
+              <button type="button" class="icon-button password-toggle" data-target="password" aria-label="แสดงรหัสผ่าน"></button>
+            </div>
+            <p class="field-error" id="password-error"></p>
+          </div>
+          <button class="btn btn-primary" type="submit" id="submit-button">เข้าสู่ระบบ</button>
+          <p class="form-hint" id="wake-hint" hidden>เซิร์ฟเวอร์กำลังเริ่มทำงาน ครั้งแรกอาจใช้เวลาประมาณ 1 นาที</p>
+          <p>ยังไม่มีบัญชี <a class="text-link" href="signup.html">สมัครบัญชี</a></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/auth-form.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>

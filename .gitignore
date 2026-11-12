@@ -1,0 +1,12 @@
+# ห้ามขึ้น GitHub: รหัสลับ และไฟล์ key ของ Google
+.env
+*.pem
+*service-account*.json
+*credentials*.json
+
+node_modules/
+.DS_Store
+.vercel
+
+# ชีตจำลองในเครื่อง (สร้างเองตอนรัน)
+backend/data/local-sheet.json
