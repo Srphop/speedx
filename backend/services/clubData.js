@@ -6,7 +6,7 @@ const REMINDER_DAYS = 3; // แจ้งเตือนกิจกรรมท�
 const BUDGET_ALERT_RATIO = 0.8; // แจ้งเตือนเมื่อใช้งบเกิน 80%
 const ATTENDED = 'เข้าร่วมจริง';
 const REGISTERED = 'ลงชื่อแล้ว';
-const CACHE_MS = 30 * 1000; // จำข้อมูลไว้ 30 วินาที จะได้ไม่เรียก Google ถี่เกิน
+const CACHE_MS = 5 * 1000; // จำข้อมูลไว้ 30 วินาที จะได้ไม่เรียก Google ถี่เกิน
 
 let cachedData = null;
 let cachedAt = 0;
