@@ -107,7 +107,7 @@ function renderTable(members) {
           </span>
         </td>
         <td class="align-right">
-          <button type="button" class="btn btn-danger-text" data-id="${escapeHtml(m.member_id)}" data-name="${escapeHtml(m.name)}">ลบ</button>
+          <button type="button" class="btn btn-danger-text member-only" data-id="${escapeHtml(m.member_id)}" data-name="${escapeHtml(m.name)}">ลบ</button>
         </td>
       </tr>`
     )

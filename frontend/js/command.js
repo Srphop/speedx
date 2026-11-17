@@ -9,7 +9,8 @@ let commandActive = 0;
 // คำสั่งที่ทำได้ทันที
 function commandActions() {
   const actions = [
-    { title: 'เพิ่มกิจกรรมใหม่', subtitle: 'เปิดฟอร์มเพิ่มกิจกรรมในปฏิทิน', icon: 'plus', run: () => (window.location.href = 'calendar.html?add=1') },
+    // เพิ่มกิจกรรมได้เฉพาะสมาชิกชมรม
+    ...(isClubMember() === false ? [] : [{ title: 'เพิ่มกิจกรรมใหม่', subtitle: 'เปิดฟอร์มเพิ่มกิจกรรมในปฏิทิน', icon: 'plus', run: () => (window.location.href = 'calendar.html?add=1') }]),
     { title: 'โหมดพรีเซนต์', subtitle: 'โชว์หน้าภาพรวมเต็มจอทีละการ์ด วนเอง', icon: 'play', keywords: 'present slideshow kiosk นำเสนอ', run: () => (window.location.href = 'dashboard.html?present=1') },
     { title: 'ส่งออกรายงานสรุป', subtitle: 'รายงานทั้งชมรมพร้อมพิมพ์ หรือบันทึกเป็น PDF', icon: 'report', keywords: 'export pdf report พิมพ์', run: () => (window.location.href = 'report.html') },
     { title: 'แก้ไขโปรไฟล์', subtitle: 'รูป ชื่อ ตำแหน่ง', icon: 'user', run: () => clickAccountAction('profile') },

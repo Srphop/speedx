@@ -2292,3 +2292,187 @@ textarea.input {
 .mini-meter > span:last-child {
   white-space: nowrap;
 }
+
+/* ---------- สิทธิ์: ผู้เยี่ยมชมไม่เห็นปุ่มแก้ข้อมูล (layout.js ติด data-access ที่ <html>) ---------- */
+:root[data-access='visitor'] .member-only {
+  display: none !important;
+}
+
+.access-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--input-outline);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.access-chip[hidden] {
+  display: none;
+}
+
+.access-chip .icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* ป้ายยศ: ประธาน = ทอง, สมาชิก = สีหลักของธีม, ผู้เยี่ยมชม = เทา */
+.role-chip {
+  display: inline-block;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.role-lead {
+  background: #f5b800;
+  color: #2b1d00;
+}
+
+.role-member {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.role-visitor {
+  background: rgba(127, 140, 138, 0.22);
+  color: inherit;
+  font-weight: 600;
+}
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* ---------- แถบ "ออนไลน์ตอนนี้" ในเมนูซ้าย ---------- */
+.online-panel {
+  margin-top: auto;
+  padding: 12px 8px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.online-panel + .sidebar-bottom {
+  margin-top: 0;
+}
+
+.online-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b8c4c1;
+}
+
+.online-count {
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.online-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2e9e5b;
+  box-shadow: 0 0 0 0 rgba(46, 158, 91, 0.6);
+  animation: online-pulse 2s ease-out infinite;
+}
+
+@keyframes online-pulse {
+  70% { box-shadow: 0 0 0 7px rgba(46, 158, 91, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 158, 91, 0); }
+}
+
+.online-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.online-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  animation: online-in 0.35s ease both;
+}
+
+@keyframes online-in {
+  from { opacity: 0; transform: translateX(-6px); }
+}
+
+.online-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.online-avatar .avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.14); /* วงกลมที่ไม่ได้เลือกสี (สีปกติกลืนกับแถบเมนู) */
+}
+
+.online-avatar .online-dot {
+  width: 10px;
+  height: 10px;
+  border-color: var(--sidebar);
+}
+
+.online-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.online-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.online-you {
+  color: #8f9b99;
+  font-weight: 500;
+}
+
+.online-more {
+  font-size: 12px;
+  color: #8f9b99;
+  padding-left: 40px;
+}
+
+@media (max-width: 767px) {
+  .access-chip span { display: none; }
+  .access-chip { padding: 4px 8px; margin-left: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .online-pulse, .online-person { animation: none; }
+}

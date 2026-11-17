@@ -1,7 +1,7 @@
 // ===== สมัครบัญชี / เข้าสู่ระบบ / ข้อมูลผู้ใช้ =====
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { findUserByEmail, findUserById, createUser, updateUser, updateUserTheme } = require('../services/userStore');
+const { findUserByEmail, findUserById, createUser, updateUser, updateUserTheme, isClubMember, roleLabel } = require('../services/userStore');
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,6 +19,8 @@ function toPublicUser(user) {
     theme: user.theme || 'light',
     created_at: user.created_at,
     position: user.position || '',
+    role: roleLabel(user), // ยศที่โชว์ เช่น ประธานชมรม / ผู้เยี่ยมชม
+    is_member: isClubMember(user), // true = สมาชิกชมรม แก้ข้อมูลได้, false = ดูได้อย่างเดียว
     avatar_color: user.avatar_color || '',
     avatar_image: user.avatar_image || '',
   };
@@ -106,11 +108,11 @@ async function updateTheme(req, res, next) {
 const AVATAR_COLORS = ['#A0EC29', '#8B2549', '#6B46B0', '#305EAA', '#A35F19', '#1B1F20'];
 const MAX_IMAGE_LENGTH = 45000; // ช่องในชีตเก็บได้ไม่เกิน 50,000 ตัวอักษร
 
-// PATCH /api/auth/me/profile  body: { name, position, avatar_color, avatar_image }
+// PATCH /api/auth/me/profile  body: { name, avatar_color, avatar_image }
+// ตำแหน่ง (position) แก้จากหน้าเว็บไม่ได้ ประธานชมรมตั้งในชีต Users เท่านั้น
 async function updateProfile(req, res, next) {
   try {
     const name = String(req.body.name || '').trim();
-    const position = String(req.body.position || '').trim().slice(0, 60);
     const avatarColor = String(req.body.avatar_color || '');
     const avatarImage = String(req.body.avatar_image || '');
 
@@ -130,7 +132,6 @@ async function updateProfile(req, res, next) {
 
     const user = await updateUser(req.userId, {
       name,
-      position,
       avatar_color: avatarColor,
       avatar_image: avatarImage,
     });
@@ -164,4 +165,4 @@ async function changePassword(req, res, next) {
   }
 }
 
-module.exports = { signup, login, getMe, updateTheme, updateProfile, changePassword };
+module.exports = { signup, login, getMe, updateTheme, updateProfile, changePassword, toPublicUser };

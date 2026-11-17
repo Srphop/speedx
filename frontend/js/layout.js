@@ -80,8 +80,83 @@ function addNavPrefetch() {
 }
 
 function logout() {
+  // เอาชื่อออกจากแถบ "ออนไลน์ตอนนี้" ทันที (ส่งแล้วไม่ต้องรอ)
+  const token = getToken();
+  if (token) {
+    fetch(`${API_BASE_URL}/api/presence`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, keepalive: true }).catch(() => {});
+  }
   clearSession();
   window.location.href = 'login.html';
+}
+
+// ---------- สิทธิ์: สมาชิกชมรม / ผู้เยี่ยมชม ----------
+// ติดป้าย data-access ที่ <html> → CSS ซ่อนปุ่มที่มี class "member-only" ให้ผู้เยี่ยมชม
+// (backend กันอีกชั้นด้วย requireMember ต่อให้กดได้ก็บันทึกไม่ได้)
+function applyAccess() {
+  const member = isClubMember();
+  const root = document.documentElement;
+  if (member === undefined) delete root.dataset.access;
+  else root.dataset.access = member ? 'member' : 'visitor';
+
+  const chip = document.getElementById('access-chip');
+  if (chip) chip.hidden = member !== false;
+}
+
+// ---------- แถบ "ออนไลน์ตอนนี้" ----------
+// บอก backend ทุก 25 วินาทีว่ายังเปิดเว็บอยู่ แล้วได้รายชื่อคนออนไลน์กลับมา
+const PRESENCE_EVERY_MS = 25 * 1000;
+const ONLINE_SHOWN = 6;
+
+function roleClass(person) {
+  if (!person.is_member) return 'role-visitor';
+  return /ประธาน|president/i.test(person.role) ? 'role-lead' : 'role-member';
+}
+
+function renderOnline(online) {
+  const list = document.getElementById('online-list');
+  if (!list) return;
+  const me = (getSavedUser() || {}).id;
+  document.getElementById('online-count').textContent = `${online.length} คน`;
+
+  const rows = online.slice(0, ONLINE_SHOWN).map((person) => `<li class="online-person" title="${escapeHtml(person.name)}, ${escapeHtml(person.role)}${person.page ? ` กำลังดูหน้า${escapeHtml(person.page)}` : ''}">
+      <span class="online-avatar">${avatarHtml(person, 'avatar-sm')}<span class="online-dot" aria-hidden="true"></span></span>
+      <span class="online-text">
+        <span class="online-name">${escapeHtml(person.name)}${person.id === me ? ' <span class="online-you">(คุณ)</span>' : ''}</span>
+        <span class="role-chip ${roleClass(person)}">${escapeHtml(person.role)}</span>
+      </span>
+    </li>`);
+  if (online.length > ONLINE_SHOWN) rows.push(`<li class="online-more">และอีก ${online.length - ONLINE_SHOWN} คน</li>`);
+  list.innerHTML = rows.join('');
+}
+
+async function sendPresence() {
+  if (!getToken()) return;
+  try {
+    const data = await apiRequest('/api/presence', { method: 'POST', body: { page: document.body.dataset.nav } });
+    // ได้ยศ / สิทธิ์ล่าสุดจากชีตมาด้วย → ประธานเปลี่ยนในชีตแล้วหน้าเว็บเปลี่ยนตามเอง
+    if (data.me) {
+      const saved = getSavedUser() || {};
+      const changed = saved.is_member !== data.me.is_member || saved.role !== data.me.role;
+      saveSession(getToken(), { ...saved, role: data.me.role, is_member: data.me.is_member });
+      if (changed) {
+        applyAccess();
+        if (typeof refreshAccountUI === 'function') refreshAccountUI();
+        document.dispatchEvent(new CustomEvent('access-change'));
+      }
+    }
+    renderOnline(data.online);
+  } catch (error) {
+    // ออฟไลน์ / เซิร์ฟเวอร์หลับ: ลองใหม่รอบหน้า
+  }
+}
+
+function startPresence() {
+  sendPresence();
+  setInterval(sendPresence, PRESENCE_EVERY_MS);
+  // กลับมาที่แท็บนี้ → อัปเดตทันที
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) sendPresence();
+  });
 }
 
 function renderSidebar() {
@@ -102,6 +177,10 @@ function renderSidebar() {
   sidebar.innerHTML = `
     <a class="sidebar-logo" href="dashboard.html"><img src="assets/logo-original.png" alt="SpeedX"></a>
     <nav><ul class="nav-list">${links}</ul></nav>
+    <section class="online-panel" aria-labelledby="online-title">
+      <p class="online-title" id="online-title"><span class="online-pulse" aria-hidden="true"></span>ออนไลน์ตอนนี้ <span class="online-count" id="online-count"></span></p>
+      <ul class="online-list" id="online-list" aria-live="polite"></ul>
+    </section>
     <div class="sidebar-bottom">
       <div class="sidebar-user">
         <span id="sidebar-avatar" aria-hidden="true">${avatarHtml(user)}</span>
@@ -122,6 +201,7 @@ function renderHeader() {
   header.innerHTML = `
     <button type="button" class="icon-button menu-button" id="menu-button" aria-label="เปิดเมนู" aria-expanded="false">${icon('menu')}</button>
     <h1 class="page-title">${escapeHtml(document.body.dataset.title)}</h1>
+    <span class="access-chip" id="access-chip" hidden title="ให้ประธานชมรมตั้งตำแหน่งให้ในชีต Users เพื่อแก้ไขข้อมูลได้">${icon('lock')}<span>ผู้เยี่ยมชม ดูได้อย่างเดียว</span></span>
     <div class="header-actions">
       <div class="popover-anchor">
         <button type="button" class="icon-button" id="theme-button" aria-haspopup="menu" aria-expanded="false"></button>
@@ -280,5 +360,7 @@ function initLayout() {
   renderSidebar();
   renderHeader();
   if (typeof setupCommandPalette === 'function') setupCommandPalette(); // ค้นหาด่วน Ctrl+K (command.js)
+  applyAccess();
   loadBell();
+  startPresence();
 }

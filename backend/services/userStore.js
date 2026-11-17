@@ -2,6 +2,10 @@
 // หัวตาราง: user_id | name | email | password_hash | theme | created_at | position | avatar_color | avatar_image
 // รหัสผ่านไม่ได้เก็บตรง ๆ เก็บแค่ค่าที่เข้ารหัสแล้ว (bcrypt)
 // avatar_image = รูปโปรไฟล์ที่ย่อแล้ว เก็บเป็นข้อความ (data URL) ในช่องเดียว
+//
+// สิทธิ์ใช้งาน: ประธานชมรมตั้งในชีตเองที่คอลัมน์ position (ผู้ใช้แก้เองจากหน้าเว็บไม่ได้)
+//   ว่างไว้ (หรือเขียนว่า ผู้เยี่ยมชม) → ผู้เยี่ยมชม ดูได้อย่างเดียว
+//   ใส่อะไรก็ได้ เช่น สมาชิก / ประธานชมรม / เหรัญญิก → สมาชิกชมรม แก้ข้อมูลได้ทุกอย่าง และโชว์เป็นยศ
 const crypto = require('crypto');
 const { readTab, appendRow, writeCell } = require('./googleSheets');
 
@@ -55,6 +59,8 @@ async function findUserById(userId) {
   return users.find((user) => user.user_id === userId) || null;
 }
 
+const VISITOR_LABEL = 'ผู้เยี่ยมชม';
+
 async function createUser({ name, email, passwordHash }) {
   // แท็บยังว่าง → ใส่หัวตารางก่อน
   const rows = await readTab(USERS_TAB);
@@ -67,7 +73,7 @@ async function createUser({ name, email, passwordHash }) {
     password_hash: passwordHash,
     theme: 'light',
     created_at: new Date().toISOString(),
-    position: '',
+    position: VISITOR_LABEL, // สมัครใหม่ = ผู้เยี่ยมชมเสมอ ประธานค่อยเปลี่ยนในชีต
     avatar_color: '',
     avatar_image: '',
   };
@@ -95,4 +101,15 @@ async function updateUserTheme(userId, theme) {
   return updateUser(userId, { theme });
 }
 
-module.exports = { findUserByEmail, findUserById, createUser, updateUser, updateUserTheme };
+// บัญชีนี้เป็นสมาชิกชมรมไหม (ดูจากคอลัมน์ position ที่ประธานตั้งในชีต)
+function isClubMember(user) {
+  const position = String((user && user.position) || '').trim();
+  return position !== '' && position !== VISITOR_LABEL && position.toLowerCase() !== 'visitor';
+}
+
+// ยศที่โชว์บนเว็บ: ตำแหน่งในชีต หรือ "ผู้เยี่ยมชม"
+function roleLabel(user) {
+  return isClubMember(user) ? String(user.position).trim() : VISITOR_LABEL;
+}
+
+module.exports = { findUserByEmail, findUserById, createUser, updateUser, updateUserTheme, isClubMember, roleLabel };

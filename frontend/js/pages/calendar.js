@@ -112,7 +112,7 @@ function renderControls() {
       <button type="button" data-view="month" aria-pressed="${state.view === 'month'}">เดือน</button>
       <button type="button" data-view="year" aria-pressed="${state.view === 'year'}">ปี</button>
     </div>
-    <button type="button" class="btn btn-primary" id="add-button">${icon('plus')} เพิ่มกิจกรรม</button>`;
+    <button type="button" class="btn btn-primary member-only" id="add-button">${icon('plus')} เพิ่มกิจกรรม</button>`;
 
   document.getElementById('prev-button').addEventListener('click', () => move(-1));
   document.getElementById('next-button').addEventListener('click', () => move(1));
@@ -179,7 +179,7 @@ function renderMonth() {
 
     cells += `<div class="day-cell ${m !== state.month ? 'outside' : ''} ${isToday ? 'today' : ''}">
       <span class="day-number num" ${isToday ? 'aria-label="วันนี้"' : ''}>${d}</span>
-      <button type="button" class="day-add" data-date="${inputDate(y, m, d)}" aria-label="เพิ่มกิจกรรมวันที่ ${d} ${MONTH_NAMES[m - 1]}">${icon('plus')}</button>
+      <button type="button" class="day-add member-only" data-date="${inputDate(y, m, d)}" aria-label="เพิ่มกิจกรรมวันที่ ${d} ${MONTH_NAMES[m - 1]}">${icon('plus')}</button>
       ${chips}
     </div>`;
   }
@@ -291,6 +291,11 @@ function clearAddErrors() {
 }
 
 function openAddDialog(date) {
+  // ผู้เยี่ยมชมเพิ่มกิจกรรมไม่ได้ (ปุ่มถูกซ่อนอยู่แล้ว กันเผื่อเปิดผ่านลิงก์ ?add=1)
+  if (isClubMember() === false) {
+    showToast('บัญชีผู้เยี่ยมชมเพิ่มกิจกรรมไม่ได้ ให้ประธานชมรมตั้งตำแหน่งให้ในชีตก่อน');
+    return;
+  }
   addForm.reset();
   clearAddErrors();
 

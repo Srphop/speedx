@@ -7,7 +7,6 @@
 
 // สีวงกลมที่เลือกได้ (ต้องตรงกับ backend/controllers/authController.js)
 const AVATAR_COLORS = ['#A0EC29', '#8B2549', '#6B46B0', '#305EAA', '#A35F19', '#1B1F20'];
-const POSITION_SUGGESTIONS = ['ประธานชมรม', 'รองประธาน', 'เลขานุการ', 'เหรัญญิก', 'หัวหน้าฝ่ายกิจกรรม', 'หัวหน้าฝ่ายประชาสัมพันธ์', 'สมาชิก'];
 
 // คีย์ลัดสลับหน้า: กด g แล้วตามด้วยตัวอักษร
 const PAGE_SHORTCUTS = [
@@ -62,7 +61,7 @@ function renderAccountMenu() {
       <div class="account-card-text">
         <strong>${escapeHtml(user.name)}</strong>
         <span class="muted small">${escapeHtml(user.email)}</span>
-        ${user.position ? `<span class="account-position">${escapeHtml(user.position)}</span>` : ''}
+        ${user.role ? `<span class="role-chip ${typeof roleClass === 'function' ? roleClass(user) : ''}">${escapeHtml(user.role)}</span>` : ''}
       </div>
     </div>
     <div class="menu-divider"></div>
@@ -203,10 +202,9 @@ function openProfileDialog() {
           <p class="field-error" data-error="name"></p>
         </div>
         <div class="field span-full">
-          <label for="profile-position">ตำแหน่งในชมรม</label>
-          <input class="input" id="profile-position" name="position" maxlength="60" list="position-list"
-            value="${escapeHtml(user.position || '')}" placeholder="เช่น ประธานชมรม" autocomplete="off">
-          <datalist id="position-list">${POSITION_SUGGESTIONS.map((p) => `<option value="${p}">`).join('')}</datalist>
+          <span class="field-label">ตำแหน่งในชมรม</span>
+          <p><span class="role-chip ${roleClass(user)}">${escapeHtml(user.role || 'ผู้เยี่ยมชม')}</span></p>
+          <p class="form-hint">ประธานชมรมเป็นคนตั้งในชีต (แท็บ Users คอลัมน์ position) ${user.is_member === false ? 'ตอนนี้เป็นผู้เยี่ยมชม ดูข้อมูลได้อย่างเดียว' : 'สมาชิกชมรมเพิ่มและแก้ข้อมูลชมรมได้'}</p>
         </div>
       </div>
       <p class="muted small" style="margin-top:16px">อีเมล ${escapeHtml(user.email)}</p>
@@ -275,7 +273,7 @@ function openProfileDialog() {
     try {
       const result = await apiRequest('/api/auth/me/profile', {
         method: 'PATCH',
-        body: { name, position: form.elements.position.value.trim(), ...draft },
+        body: { name, ...draft },
       });
       saveSession(getToken(), result.user);
       refreshAccountUI();

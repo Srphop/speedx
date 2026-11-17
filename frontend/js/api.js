@@ -18,6 +18,13 @@ function getSavedUser() {
   }
 }
 
+// บัญชีนี้เป็นสมาชิกชมรมไหม (ประธานตั้งในชีต Users คอลัมน์ position)
+// true = แก้ข้อมูลได้, false = ผู้เยี่ยมชม ดูอย่างเดียว, undefined = ยังไม่รู้ (บัญชีที่ล็อกอินไว้ก่อนอัปเดต)
+function isClubMember() {
+  const user = getSavedUser();
+  return user ? user.is_member : undefined;
+}
+
 function saveSession(token, user) {
   try {
     localStorage.setItem(TOKEN_KEY, token);
