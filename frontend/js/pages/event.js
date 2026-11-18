@@ -121,17 +121,25 @@ function renderDetail(data) {
   );
 }
 
-async function loadEvent() {
+// quiet = true คือเช็กข้อมูลใหม่เงียบ ๆ วาดใหม่เฉพาะตอนข้อมูลกิจกรรมเปลี่ยน
+let lastKey = '';
+async function loadEvent(quiet = false) {
   if (!eventId) {
     renderEmpty(detailBox, 'ไม่ได้ระบุกิจกรรม เลือกกิจกรรมจากหน้ากิจกรรม');
     return;
   }
-  renderLoading(detailBox, 6);
+  if (!quiet) renderLoading(detailBox, 6);
   try {
-    renderDetail(await apiRequest(`/api/events/${encodeURIComponent(eventId)}`));
+    const data = await apiRequest(`/api/events/${encodeURIComponent(eventId)}`);
+    const key = dataKey(data);
+    if (quiet && key === lastKey) return;
+    lastKey = key;
+    renderDetail(data);
   } catch (error) {
-    renderError(detailBox, error.message, loadEvent);
+    if (quiet) return;
+    renderError(detailBox, error.message, () => loadEvent());
   }
 }
 
 loadEvent();
+keepFresh(() => loadEvent(true));

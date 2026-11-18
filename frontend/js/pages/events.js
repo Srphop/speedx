@@ -97,14 +97,20 @@ function renderTable() {
   });
 }
 
-async function loadEvents() {
-  renderLoading(tableBox, 6);
+// quiet = true คือเช็กข้อมูลใหม่เงียบ ๆ วาดตารางใหม่เฉพาะตอนข้อมูลเปลี่ยน (คำค้น / ตัวกรองยังอยู่)
+let lastKey = '';
+async function loadEvents(quiet = false) {
+  if (!quiet) renderLoading(tableBox, 6);
   try {
     const data = await apiRequest('/api/events');
+    const key = dataKey(data);
+    if (quiet && key === lastKey) return;
+    lastKey = key;
     allEvents = data.events;
     renderTable();
   } catch (error) {
-    renderError(tableBox, error.message, loadEvents);
+    if (quiet) return;
+    renderError(tableBox, error.message, () => loadEvents());
   }
 }
 
@@ -122,3 +128,4 @@ document.getElementById('export-events').addEventListener('click', () => {
 searchInput.addEventListener('input', renderTable);
 renderFilterMenu();
 loadEvents();
+keepFresh(() => loadEvents(true));

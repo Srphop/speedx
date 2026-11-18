@@ -386,13 +386,25 @@ document.getElementById('add-close').innerHTML = icon('close');
 document.getElementById('add-close').addEventListener('click', () => addDialog.close());
 
 // ---------- โหลดข้อมูล ----------
-async function loadCalendar() {
+// quiet = true คือเช็กกิจกรรมใหม่เงียบ ๆ (เดือน / ปีที่ดูอยู่ และกิจกรรมที่เลือกไว้ไม่เปลี่ยน)
+let lastKey = '';
+async function loadCalendar(quiet = false) {
+  if (quiet) {
+    const eventData = await apiRequest('/api/events').catch(() => null);
+    if (!eventData || dataKey(eventData) === lastKey) return;
+    lastKey = dataKey(eventData);
+    state.events = eventData.events;
+    render();
+    return;
+  }
+
   renderLoading(body, 6);
   try {
     const [eventData, notificationData] = await Promise.all([
       apiRequest('/api/events'),
       getNotifications().catch(() => null),
     ]);
+    lastKey = dataKey(eventData);
     state.events = eventData.events;
 
     // ใช้ "วันนี้" ของเซิร์ฟเวอร์ (ตรงกับเวลาที่ใช้คำนวณสถานะใกล้ถึง)
@@ -407,10 +419,11 @@ async function loadCalendar() {
       openAddDialog();
     }
   } catch (error) {
-    renderError(body, error.message, loadCalendar);
+    renderError(body, error.message, () => loadCalendar());
   }
 }
 
 renderControls();
 renderPanel();
 loadCalendar();
+keepFresh(() => loadCalendar(true));

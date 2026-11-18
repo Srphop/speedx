@@ -1,15 +1,13 @@
 // ===== แปลงข้อมูลดิบจากชีตให้เป็น object ที่ใช้ง่าย + กติกากลางของระบบ =====
 const { readAllTabs, writeCell, appendRow } = require('./googleSheets');
 const { toIsoDate, daysUntil } = require('../utils/time');
+const { createLiveCache } = require('./liveCache');
 
 const REMINDER_DAYS = 3; // แจ้งเตือนกิจกรรมที่จะเริ่มภายใน 3 วัน
 const BUDGET_ALERT_RATIO = 0.8; // แจ้งเตือนเมื่อใช้งบเกิน 80%
 const ATTENDED = 'เข้าร่วมจริง';
 const REGISTERED = 'ลงชื่อแล้ว';
-const CACHE_MS = 5 * 1000; // จำข้อมูลไว้ 5 วินาที จะได้ไม่เรียก Google ถี่เกิน
-
-let cachedData = null;
-let cachedAt = 0;
+const REFRESH_MS = 5 * 1000; // ระหว่างมีคนใช้เว็บ อ่านชีตใหม่ทุก 5 วินาที (ไม่เกินโควตา Google 60 ครั้ง/นาที)
 
 // ---------- ตัวช่วยแปลงค่า ----------
 function toNumber(value) {
@@ -124,35 +122,34 @@ async function loadFromSheet() {
   };
 }
 
-// ดึงข้อมูลชมรม (ใช้ของที่จำไว้ ถ้ายังไม่เกิน 30 วินาที)
-async function getClubData() {
-  const cacheStillFresh = cachedData && Date.now() - cachedAt < CACHE_MS;
-  if (!cacheStillFresh) {
-    cachedData = await loadFromSheet();
-    cachedAt = Date.now();
-    console.log(
-      `อ่านจากชีต: สมาชิก ${cachedData.members.length} คน, กิจกรรม ${cachedData.events.length} รายการ, ข่าว ${cachedData.news.length} ข่าว`
-    );
-  }
-  return cachedData;
+// ดึงข้อมูลชมรม: ได้ของที่จำไว้ทันที เซิร์ฟเวอร์คอยอ่านชีตใหม่ให้เองเบื้องหลัง (ดู liveCache.js)
+const clubCache = createLiveCache(
+  async () => {
+    const data = await loadFromSheet();
+    console.log(`อ่านจากชีต: สมาชิก ${data.members.length} คน, กิจกรรม ${data.events.length} รายการ, ข่าว ${data.news.length} ข่าว`);
+    return data;
+  },
+  { refreshMs: REFRESH_MS }
+);
+
+function getClubData(options) {
+  return clubCache.get(options);
 }
 
 // เขียนสถานะสมาชิกกลับลงชีต แล้วล้างข้อมูลที่จำไว้ให้โหลดใหม่
 async function setMemberStatus(memberId, status) {
-  cachedData = null;
-  const data = await getClubData();
+  const data = await getClubData({ fresh: true }); // อ่านใหม่ก่อนเขียน จะได้เลขแถวที่ถูกต้อง
   const member = data.members.find((item) => item.member_id === memberId);
   if (!member) return null;
 
   await writeCell('Members', data.memberStatusColumn, member._row, status);
-  cachedData = null;
+  clubCache.invalidate();
   return { ...member, membership_status: status };
 }
 
 // เพิ่มกิจกรรมใหม่เป็นแถวใหม่ในแท็บ Events (เรียงค่าตามหัวตารางของชีต)
 async function createEvent(fields) {
-  cachedData = null;
-  const data = await getClubData();
+  const data = await getClubData({ fresh: true });
 
   // รหัสถัดไป: EVT-008 → EVT-009
   const lastNumber = Math.max(0, ...data.events.map((e) => Number(e.event_id.replace(/\D/g, '')) || 0));
@@ -162,7 +159,7 @@ async function createEvent(fields) {
   const row = data.eventsHeader.map((key) => (values[key] === undefined ? '' : values[key]));
   await appendRow('Events', row, { asTyped: true });
 
-  cachedData = null;
+  clubCache.invalidate();
   return values;
 }
 

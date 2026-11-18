@@ -111,10 +111,15 @@ function renderFinance(data) {
   });
 }
 
-async function loadFinance() {
-  renderLoading(content, 8);
+// quiet = true คือเช็กข้อมูลใหม่เงียบ ๆ วาดใหม่เฉพาะตอนตัวเลขเปลี่ยน
+let lastKey = '';
+async function loadFinance(quiet = false) {
+  if (!quiet) renderLoading(content, 8);
   try {
     const data = await apiRequest('/api/finance');
+    const key = dataKey(data);
+    if (quiet && key === lastKey) return;
+    lastKey = key;
     renderFinance(data);
     // ส่งออก CSV: สรุปการเงินครบทุกส่วนในไฟล์เดียว
     document.getElementById('export-finance').addEventListener('click', () => {
@@ -129,8 +134,10 @@ async function loadFinance() {
       downloadCsv('finance', ['ส่วน', 'รายการ', 'รายละเอียด', 'จำนวนเงิน (บาท)', 'หมายเหตุ'], rows);
     });
   } catch (error) {
-    renderError(content, error.message, loadFinance);
+    if (quiet) return;
+    renderError(content, error.message, () => loadFinance());
   }
 }
 
 loadFinance();
+keepFresh(() => loadFinance(true));

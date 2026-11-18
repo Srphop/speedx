@@ -223,8 +223,7 @@
   background: var(--wallpaper) center / cover no-repeat;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 40%);
   mask-image: linear-gradient(to right, transparent, #000 40%);
-  transform-origin: right center;
-  animation: wallpaper-drift 18s ease-in-out infinite alternate;
+  /* รูปอยู่นิ่ง: เดิมขยับช้า ๆ ตลอดเวลา ทำให้เบราว์เซอร์ต้องวาดทั้งจอใหม่ทุกเฟรม เว็บเลยหน่วง */
 }
 
 /* รูปแนวนอน (ไซเบอร์): เต็มจอ ตัวละครอยู่กลาง เลยมืดลงนิดให้อ่านง่าย */
@@ -234,12 +233,6 @@
   background: linear-gradient(90deg, rgba(6, 12, 22, 0.55), rgba(6, 12, 22, 0.15) 50%, rgba(6, 12, 22, 0.45)), var(--wallpaper) center 30% / cover no-repeat;
   -webkit-mask-image: none;
   mask-image: none;
-}
-
-/* รูปขยับช้า ๆ เหมือนกล้องหายใจ */
-@keyframes wallpaper-drift {
-  from { transform: scale(1); }
-  to { transform: scale(1.05) translateY(-1%); }
 }
 
 :root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body {
@@ -258,9 +251,9 @@
   border-right: 1px solid var(--divider);
 }
 
+/* การ์ดไม่เบลอฉากหลังแล้ว (เบลอทุกการ์ดทุกครั้งที่เลื่อนจอ = หน่วงมาก) ใช้สีทึบขึ้นนิดแทน */
 :root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .card {
-  background: var(--glass);
-  backdrop-filter: blur(16px) saturate(1.2);
+  background: color-mix(in srgb, var(--glass), var(--canvas) 30%);
   border-color: color-mix(in srgb, var(--accent) 22%, transparent);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }

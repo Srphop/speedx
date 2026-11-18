@@ -42,7 +42,7 @@ async function signup(req, res, next) {
       return res.status(400).json({ message: 'ข้อมูลไม่ครบหรือไม่ถูกต้อง', errors });
     }
 
-    if (await findUserByEmail(email)) {
+    if (await findUserByEmail(email, { fresh: true })) {
       return res.status(409).json({ message: 'อีเมลนี้มีบัญชีแล้ว', errors: { email: 'อีเมลนี้มีบัญชีแล้ว' } });
     }
 

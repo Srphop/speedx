@@ -106,7 +106,7 @@ function startCountdown(next) {
     box.setAttribute('aria-label', `อีก ${values.days} วัน ${values.hours} ชั่วโมง ${values.minutes} นาที ก่อนเริ่มกิจกรรม`);
     if (left === 0) {
       clearInterval(countdownTimer);
-      setTimeout(loadDashboard, 1500); // ถึงเวลาแล้ว โหลดใหม่ให้ขึ้นว่ากำลังจัด
+      setTimeout(() => loadDashboard(), 1500); // ถึงเวลาแล้ว โหลดใหม่ให้ขึ้นว่ากำลังจัด
     }
   }
   tick();
@@ -139,7 +139,7 @@ function startSpeedLines(canvas) {
   }
 
   function resize() {
-    const ratio = window.devicePixelRatio || 1;
+    const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
     width = canvas.clientWidth;
     height = canvas.clientHeight;
     canvas.width = width * ratio;
@@ -178,8 +178,22 @@ function startSpeedLines(canvas) {
   } else {
     frame = requestAnimationFrame(draw);
   }
+  // เลื่อนจอลงจนการ์ดนับถอยหลังพ้นจอ → หยุดวาดเส้น กลับขึ้นมาค่อยวาดต่อ
+  let onScreen = true;
+  const watcher = new IntersectionObserver(([entry]) => {
+    if (prefersReducedMotion() || entry.isIntersecting === onScreen) return;
+    onScreen = entry.isIntersecting;
+    cancelAnimationFrame(frame);
+    if (onScreen) {
+      last = performance.now();
+      frame = requestAnimationFrame(draw);
+    }
+  });
+  watcher.observe(canvas);
+
   stopSpeedLines = () => {
     cancelAnimationFrame(frame);
+    watcher.disconnect();
     window.removeEventListener('resize', resize);
   };
 }
@@ -738,18 +752,26 @@ window.addEventListener('resize', () => {
   }, 250);
 });
 
-async function loadDashboard() {
-  renderLoading(content, 8);
+// quiet = true คือเช็กข้อมูลใหม่เงียบ ๆ (ไม่โชว์แถบโหลด ไม่โชว์ error วาดใหม่เฉพาะตอนข้อมูลเปลี่ยน)
+let lastKey = '';
+async function loadDashboard(quiet = false) {
+  if (!quiet) renderLoading(content, 8);
   try {
-    renderDashboard(await apiRequest('/api/overview'));
+    const data = await apiRequest('/api/overview');
+    const key = dataKey(data);
+    if (quiet && (key === lastKey || presentation)) return;
+    lastKey = key;
+    renderDashboard(data);
     // เปิดมาจากค้นหาด่วน (dashboard.html?present=1) → เข้าโหมดพรีเซนต์เลย
-    if (new URLSearchParams(window.location.search).get('present') === '1') {
+    if (!quiet && new URLSearchParams(window.location.search).get('present') === '1') {
       history.replaceState(null, '', 'dashboard.html');
       setTimeout(() => startPresentation(false), 900);
     }
   } catch (error) {
-    renderError(content, error.message, loadDashboard);
+    if (quiet) return;
+    renderError(content, error.message, () => loadDashboard());
   }
 }
 
 loadDashboard();
+keepFresh(() => loadDashboard(true));

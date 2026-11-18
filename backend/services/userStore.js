@@ -8,6 +8,7 @@
 //   ใส่อะไรก็ได้ เช่น สมาชิก / ประธานชมรม / เหรัญญิก → สมาชิกชมรม แก้ข้อมูลได้ทุกอย่าง และโชว์เป็นยศ
 const crypto = require('crypto');
 const { readTab, appendRow, writeCell } = require('./googleSheets');
+const { createLiveCache } = require('./liveCache');
 
 const USERS_TAB = 'Users';
 const COLUMNS = [
@@ -27,7 +28,15 @@ function columnLetter(key) {
 }
 
 // อ่านผู้ใช้ทั้งหมด → [{ user_id, name, email, ..., _row: เลขแถวในชีต }]
-async function readUsers() {
+// จำไว้แบบเดียวกับข้อมูลชมรม: ระหว่างมีคนใช้ อ่านแท็บ Users ใหม่ทุก 10 วินาที
+// (ประธานเปลี่ยนยศในชีต เว็บเห็นภายในไม่กี่วินาที แต่ไม่ต้องอ่านชีตทุกคำขอ)
+const usersCache = createLiveCache(readUsersFromSheet, { refreshMs: 10 * 1000 });
+
+function readUsers(options) {
+  return usersCache.get(options);
+}
+
+async function readUsersFromSheet() {
   const rows = await readTab(USERS_TAB);
   return rows.slice(1).map((cells, index) => {
     const user = { _row: index + 2 }; // แถว 1 คือหัวตาราง
@@ -49,8 +58,9 @@ async function ensureHeader() {
   }
 }
 
-async function findUserByEmail(email) {
-  const users = await readUsers();
+// fresh: true → อ่านชีตใหม่ (ใช้ตอนสมัคร กันอีเมลซ้ำ)
+async function findUserByEmail(email, options) {
+  const users = await readUsers(options);
   return users.find((user) => user.email === email) || null;
 }
 
@@ -78,12 +88,13 @@ async function createUser({ name, email, passwordHash }) {
     avatar_image: '',
   };
   await appendRow(USERS_TAB, COLUMNS.map((key) => user[key]));
+  usersCache.invalidate();
   return user;
 }
 
 // แก้หลายช่องของผู้ใช้คนเดียว เช่น updateUser(id, { name: 'ใหม่', position: 'ประธาน' })
 async function updateUser(userId, fields) {
-  const user = await findUserById(userId);
+  const user = (await readUsers({ fresh: true })).find((item) => item.user_id === userId); // เลขแถวล่าสุดก่อนเขียน
   if (!user) return null;
 
   const keys = Object.keys(fields).filter((key) => COLUMNS.includes(key) && key !== 'user_id');
@@ -94,6 +105,7 @@ async function updateUser(userId, fields) {
       await writeCell(USERS_TAB, columnLetter(key), user._row, fields[key]);
     }
   }
+  usersCache.invalidate();
   return { ...user, ...fields };
 }
 

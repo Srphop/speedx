@@ -33,7 +33,7 @@
   }
 
   function resize() {
-    const ratio = window.devicePixelRatio || 1;
+    const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = window.innerWidth * ratio;
     canvas.height = window.innerHeight * ratio;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);

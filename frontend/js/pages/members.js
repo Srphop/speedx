@@ -167,8 +167,8 @@ async function loadMembers(quiet = false) {
     const data = await apiRequest('/api/members');
 
     // ข้อมูลเหมือนเดิม ไม่ต้องวาดใหม่ (ตารางกับกราฟจะได้ไม่กระพริบ)
-    if (quiet && JSON.stringify(data) === lastData) return;
-    lastData = JSON.stringify(data);
+    if (quiet && dataKey(data) === lastData) return;
+    lastData = dataKey(data);
 
     allMembers = data.members;
     renderFilters();
@@ -241,7 +241,5 @@ document.getElementById('remove-confirm').addEventListener('click', async (event
 
 loadMembers();
 
-// เช็กข้อมูลใหม่จากชีตทุก 10 วินาที แก้ในชีตแล้วหน้าเว็บอัปเดตเอง ไม่ต้องกดรีเฟรช
-setInterval(() => {
-  if (!dialog.open && document.visibilityState === 'visible') loadMembers(true);
-}, 10000);
+// เช็กข้อมูลใหม่จากชีตทุก 10 วินาที แก้ในชีตแล้วหน้าเว็บอัปเดตเอง ไม่ต้องกดรีเฟรช (ดู keepFresh ใน layout.js)
+keepFresh(() => loadMembers(true));

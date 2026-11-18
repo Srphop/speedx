@@ -447,7 +447,7 @@ function startSeasonEffect(theme) {
 
   // ปรับขนาด canvas ให้คมชัดตามหน้าจอ
   function resize() {
-    const ratio = window.devicePixelRatio || 1;
+    const ratio = Math.min(window.devicePixelRatio || 1, 1.5); // จอความละเอียดสูงไม่ต้องวาดเต็ม ประหยัดแรงเครื่อง
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = width * ratio;

@@ -16,8 +16,10 @@ const NAV_ITEMS = [
 ];
 
 // แจ้งเตือนโหลดครั้งเดียว ใช้ร่วมกันทั้งกระดิ่งและหน้าข่าวสาร
+// fresh = true → ทิ้งของเดิม ขอใหม่ (ใช้ตอนเช็กข้อมูลใหม่ทุก 10 วินาที)
 let notificationsRequest = null;
-function getNotifications() {
+function getNotifications(fresh = false) {
+  if (fresh) notificationsRequest = null;
   if (!notificationsRequest) {
     notificationsRequest = apiRequest('/api/notifications').catch((error) => {
       notificationsRequest = null; // ให้ลองใหม่ได้
@@ -102,6 +104,44 @@ function applyAccess() {
   if (chip) chip.hidden = member !== false;
 }
 
+// ---------- ข้อมูลสดจากชีต ----------
+// ทุกหน้าที่โชว์ข้อมูลชมรมเรียก keepFresh(() => loadXxx(true)) ไว้
+// → ระหว่างเปิดหน้าอยู่ ดึงข้อมูลใหม่เงียบ ๆ ทุก 10 วินาที และทันทีที่กลับมาที่แท็บนี้
+//   แก้ในชีตแล้วหน้าเว็บอัปเดตเอง ไม่ต้องกดรีเฟรช (วาดใหม่เฉพาะตอนข้อมูลเปลี่ยนจริง)
+// ไม่ดึงตอน: แท็บซ่อนอยู่ / กำลังกรอกฟอร์มในหน้าต่าง / อยู่ในโหมดพรีเซนต์
+const LIVE_EVERY_MS = 10 * 1000;
+const freshTasks = [];
+
+function keepFresh(reload) {
+  freshTasks.push(reload);
+}
+
+// เอาไว้เทียบว่าข้อมูลเปลี่ยนไหม (ไม่นับเวลาของเซิร์ฟเวอร์ที่เปลี่ยนทุกครั้งที่ขอ)
+function dataKey(data) {
+  return JSON.stringify(data, (key, value) => (key === 'now' || key === 'generated_at' ? undefined : value));
+}
+
+let refreshing = false;
+async function refreshLiveData() {
+  if (refreshing || document.hidden || document.querySelector('dialog[open], .present')) return;
+  refreshing = true;
+  try {
+    getNotifications(true);
+    await Promise.all([loadBell(true), ...freshTasks.map((reload) => reload())]);
+  } catch (error) {
+    // เน็ตหลุด / เซิร์ฟเวอร์หลับ: ลองใหม่รอบหน้า
+  } finally {
+    refreshing = false;
+  }
+}
+
+function startLiveData() {
+  setInterval(refreshLiveData, LIVE_EVERY_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshLiveData();
+  });
+}
+
 // ---------- แถบ "ออนไลน์ตอนนี้" ----------
 // บอก backend ทุก 25 วินาทีว่ายังเปิดเว็บอยู่ แล้วได้รายชื่อคนออนไลน์กลับมา
 const PRESENCE_EVERY_MS = 25 * 1000;
@@ -150,12 +190,25 @@ async function sendPresence() {
   }
 }
 
+// ปิดแท็บ / ปิดเบราว์เซอร์ / ออกจากหน้า → บอก backend ว่ากำลังออก (ไม่ต้องรอคำตอบ)
+// ถ้าแค่กดไปหน้าอื่นในเว็บ หน้าใหม่จะส่ง "ยังอยู่" ตามมาภายใน 10 วินาที ชื่อเลยไม่หาย
+function sendLeaving() {
+  const token = getToken();
+  if (!token) return;
+  fetch(`${API_BASE_URL}/api/presence?soon=1`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, keepalive: true }).catch(() => {});
+}
+
 function startPresence() {
   sendPresence();
   setInterval(sendPresence, PRESENCE_EVERY_MS);
   // กลับมาที่แท็บนี้ → อัปเดตทันที
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) sendPresence();
+  });
+  window.addEventListener('pagehide', sendLeaving);
+  // กดย้อนกลับแล้วเบราว์เซอร์เอาหน้าเดิมจากหน่วยความจำมาโชว์ → บอกว่ากลับมาแล้ว
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) sendPresence();
   });
 }
 
@@ -317,14 +370,18 @@ function ringBellOncePerVisit(hasNotifications) {
   document.getElementById('bell-button').classList.add('bell-ring');
 }
 
-// โหลดรายการแจ้งเตือนใส่กระดิ่ง
-async function loadBell() {
+// โหลดรายการแจ้งเตือนใส่กระดิ่ง (quiet = เช็กใหม่เงียบ ๆ เปลี่ยนเฉพาะตอนรายการเปลี่ยน)
+let lastBellKey = '';
+async function loadBell(quiet = false) {
   const list = document.getElementById('bell-list');
   const count = document.getElementById('bell-count');
-  renderLoading(list, 2);
+  if (!quiet) renderLoading(list, 2);
 
   try {
     const { notifications } = await getNotifications();
+    const key = dataKey(notifications);
+    if (quiet && key === lastBellKey) return;
+    lastBellKey = key;
     count.hidden = notifications.length === 0;
     count.textContent = notifications.length;
     ringBellOncePerVisit(notifications.length > 0);
@@ -352,7 +409,8 @@ async function loadBell() {
       })
       .join('');
   } catch (error) {
-    renderError(list, error.message, loadBell);
+    if (quiet) return;
+    renderError(list, error.message, () => loadBell());
   }
 }
 
@@ -363,4 +421,5 @@ function initLayout() {
   applyAccess();
   loadBell();
   startPresence();
+  startLiveData();
 }

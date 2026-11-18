@@ -18,10 +18,14 @@ function daysLeftText(days) {
   return { number: String(days), unit: 'วัน' };
 }
 
-async function loadNotice() {
+let lastNoticeKey = '';
+async function loadNotice(quiet = false) {
   try {
     const { notifications } = await getNotifications();
     const upcoming = notifications.filter((n) => n.type === 'event');
+    const key = dataKey(upcoming);
+    if (quiet && key === lastNoticeKey) return;
+    lastNoticeKey = key;
 
     if (upcoming.length === 0) {
       noticeBox.hidden = true;
@@ -105,10 +109,15 @@ function newsItemHtml(item) {
     </article>`;
 }
 
-async function loadNews() {
-  renderLoading(feed, 5);
+// quiet = true คือเช็กข่าวใหม่เงียบ ๆ วาดใหม่เฉพาะตอนมีข่าวเปลี่ยน
+let lastNewsKey = '';
+async function loadNews(quiet = false) {
+  if (!quiet) renderLoading(feed, 5);
   try {
     const { news } = await apiRequest('/api/news');
+    const key = dataKey(news);
+    if (quiet && key === lastNewsKey) return;
+    lastNewsKey = key;
     if (news.length === 0) {
       renderEmpty(feed, 'ยังไม่มีข่าว เพิ่มข่าวได้ที่แท็บ News ใน Google Sheet');
       return;
@@ -116,9 +125,11 @@ async function loadNews() {
     feed.removeAttribute('aria-busy');
     feed.innerHTML = `<div class="news-feed">${news.map(newsItemHtml).join('<hr style="border:0;border-top:1px solid var(--divider);margin:8px 0">')}</div>`;
   } catch (error) {
-    renderError(feed, error.message, loadNews);
+    if (quiet) return;
+    renderError(feed, error.message, () => loadNews());
   }
 }
 
 loadNotice();
 loadNews();
+keepFresh(() => Promise.all([loadNotice(true), loadNews(true)]));

@@ -46,6 +46,9 @@ app.use('/api', (req, res) => {
 });
 
 // ---------- frontend ----------
+// รูป / ไอคอนแทบไม่เปลี่ยน → ให้เบราว์เซอร์จำไว้ 7 วัน ไม่ต้องถามเซิร์ฟเวอร์ทุกหน้า
+// HTML / CSS / JS ยังเช็กกับเซิร์ฟเวอร์ทุกครั้ง แก้โค้ดแล้วจะเห็นทันที
+app.use('/assets', express.static(path.join(__dirname, '..', 'frontend', 'assets'), { maxAge: '7d' }));
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // error ที่ไม่ได้ดักไว้ จะมาจบที่นี่

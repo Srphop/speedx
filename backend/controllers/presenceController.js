@@ -1,6 +1,6 @@
 // ===== แถบ "ออนไลน์ตอนนี้" =====
 const { findUserById } = require('../services/userStore');
-const { needsProfile, markOnline, markOffline, listOnline } = require('../services/presence');
+const { needsProfile, markOnline, markOffline, markLeaving, listOnline } = require('../services/presence');
 const { toPublicUser } = require('./authController');
 
 // หน้าที่เปิดอยู่ (ไว้โชว์ว่าแต่ละคนดูหน้าไหน)
@@ -33,9 +33,11 @@ async function heartbeat(req, res, next) {
   }
 }
 
-// DELETE /api/presence → ออกจากระบบแล้ว เอาชื่อออกจากแถบทันที
+// DELETE /api/presence          → ออกจากระบบแล้ว เอาชื่อออกจากแถบทันที
+// DELETE /api/presence?soon=1   → ปิดแท็บ / ออกจากหน้า ชื่อหายใน 10 วินาที ถ้าไม่มีหน้าใหม่เปิดตามมา
 function leave(req, res) {
-  markOffline(req.userId);
+  if (req.query.soon) markLeaving(req.userId);
+  else markOffline(req.userId);
   res.json({ message: 'ออฟไลน์แล้ว' });
 }
 
