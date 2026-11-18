@@ -16,6 +16,7 @@
     neon: { colors: ['#C77DFF', '#7DF9FF', '#FFFFFF'], shape: 'spark' },
     blade: { colors: ['#39E07A', '#B15CFF', '#D6FFE6'], shape: 'ember' },
     cyber: { colors: ['#36C8FF', '#B8F2FF', '#FF4D6D'], shape: 'spark' },
+    yant: { colors: ['#FFB347', '#FF5A3C', '#E8C48A'], shape: 'ember' },
   };
 
   const canvas = document.createElement('canvas');

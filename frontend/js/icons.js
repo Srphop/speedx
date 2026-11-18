@@ -30,6 +30,7 @@ const ICON_PATHS = {
   pumpkin: '<path d="M12 7c-4.5 0-7.5 2.8-7.5 6.5S7.5 20 12 20s7.5-2.8 7.5-6.5S16.5 7 12 7z"/><path d="M12 7c-2 2-2 11 0 13M12 7c2 2 2 11 0 13"/><path d="M12 7V4.5c1 0 2-.5 2.5-1.5"/>',
   sparkle: '<path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
   sword: '<path d="M20 4l-9.5 9.5"/><path d="M20 4h-3.5L7 13.5"/><path d="M20 4v3.5L10.5 17"/><path d="M6.5 13l4.5 4.5"/><path d="M8.7 15.3L4 20"/>',
+  hat: '<path d="M3 15c2 1.5 5.5 2.2 9 2.2s7-.7 9-2.2"/><path d="M6.5 15.5l1.2-7.5c.2-1.2 1.2-2 2.4-1.8l1.9.4 1.9-.4c1.2-.2 2.2.6 2.4 1.8l1.2 7.5"/><path d="M7.3 12.5c3 .9 6.4.9 9.4 0"/>',
   chip: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 10h4v4h-4z"/><path d="M9.5 3v4M14.5 3v4M9.5 17v4M14.5 17v4M3 9.5h4M3 14.5h4M17 9.5h4M17 14.5h4"/>',
   download: '<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>',
   printer: '<path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6H7z"/>',

@@ -64,7 +64,8 @@
 :root[data-theme='christmas'],
 :root[data-theme='neon'],
 :root[data-theme='blade'],
-:root[data-theme='cyber'] {
+:root[data-theme='cyber'],
+:root[data-theme='yant'] {
   --upcoming-bg: #44320b;  --upcoming-text: #ffe08a;
   --planned-bg: #492527;   --planned-text: #ffc0bc;
   --done-bg: #203c25;      --done-text: #c2eab6;
@@ -197,12 +198,34 @@
   --wallpaper-blur: url('../assets/themes/cyber-blur.jpg');
 }
 
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) {
+/* สักยันต์: ห้องมืดแดงเลือดหมู + ทองเหลืองเก่า + แสงตะเกียง */
+:root[data-theme='yant'] {
+  --canvas: #120807;
+  --surface: #1f0f0c;
+  --sidebar: #0b0504;
+  --text: #f6ebe3;
+  --muted: #cdb7a9;
+  --divider: #43261f;
+  --input-outline: #957265;
+  --accent: #d9a74a;
+  --accent-hover: #e8bc66;
+  --on-accent: #1a0d06;
+  --focus: #ff6a45;
+  --danger: #ffa89a;
+  --hover-row: #2b1511;
+  --chart-1: #d9a74a; --chart-2: #c0392b; --chart-3: #f0d29a; --chart-4: #7a2a20; --chart-5: #94817a;
+  --glass: rgba(26, 10, 8, 0.74);
+  --glass-side: rgba(12, 5, 4, 0.78);
+  --wallpaper: url('../assets/themes/yant.jpg');
+  --wallpaper-blur: url('../assets/themes/yant-blur.jpg');
+}
+
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) {
   color-scheme: dark;
 }
 
 /* ชั้นหลังสุด: รูปเดียวกันแบบเบลอ เต็มจอ ให้สีกลืนกัน */
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body::before {
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) body::before {
   content: '';
   position: fixed;
   inset: -60px;
@@ -212,7 +235,7 @@
 }
 
 /* ชั้นรูปจริง: รูปแนวตั้งชิดขวาเต็มความสูง ขอบซ้ายค่อย ๆ จางหาย */
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body::after {
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) body::after {
   content: '';
   position: fixed;
   top: 0;
@@ -235,24 +258,33 @@
   mask-image: none;
 }
 
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body {
+/* รูปแนวนอน (สักยันต์): เต็มจอ คนอยู่ซ้าย มืดลงฝั่งเนื้อหาให้อ่านง่าย */
+:root[data-theme='yant'] body::after {
+  left: 0;
+  width: auto;
+  background: radial-gradient(ellipse at 30% 35%, rgba(18, 8, 7, 0.15), rgba(18, 8, 7, 0.7) 75%), linear-gradient(90deg, rgba(12, 5, 4, 0.25), rgba(12, 5, 4, 0.45)), var(--wallpaper) 30% 25% / cover no-repeat;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) body {
   background: var(--canvas);
 }
 
 /* พื้นหลังของโครงหน้าโปร่งใส ให้เห็นรูป */
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .main-header {
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) .main-header {
   background: var(--glass-side);
   backdrop-filter: blur(12px);
 }
 
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .sidebar {
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) .sidebar {
   background: var(--glass-side);
   backdrop-filter: blur(14px);
   border-right: 1px solid var(--divider);
 }
 
 /* การ์ดไม่เบลอฉากหลังแล้ว (เบลอทุกการ์ดทุกครั้งที่เลื่อนจอ = หน่วงมาก) ใช้สีทึบขึ้นนิดแทน */
-:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) .card {
+:root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) .card {
   background: color-mix(in srgb, var(--glass), var(--canvas) 30%);
   border-color: color-mix(in srgb, var(--accent) 22%, transparent);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
@@ -272,7 +304,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber']) body::after {
+  :root:is([data-theme='neon'], [data-theme='blade'], [data-theme='cyber'], [data-theme='yant']) body::after {
     animation: none;
   }
 }
@@ -283,7 +315,8 @@
 :root[data-theme='christmas'] .sidebar-logo img,
 :root[data-theme='neon'] .sidebar-logo img,
 :root[data-theme='blade'] .sidebar-logo img,
-:root[data-theme='cyber'] .sidebar-logo img {
+:root[data-theme='cyber'] .sidebar-logo img,
+:root[data-theme='yant'] .sidebar-logo img {
   content: url('../assets/logo-white.png');
 }
 
@@ -302,12 +335,14 @@
 :root[data-theme='christmas'] .logo-light-mode,
 :root[data-theme='neon'] .logo-light-mode,
 :root[data-theme='blade'] .logo-light-mode,
-:root[data-theme='cyber'] .logo-light-mode { display: none; }
+:root[data-theme='cyber'] .logo-light-mode,
+:root[data-theme='yant'] .logo-light-mode { display: none; }
 :root[data-theme='halloween'] .logo-dark-mode,
 :root[data-theme='christmas'] .logo-dark-mode,
 :root[data-theme='neon'] .logo-dark-mode,
 :root[data-theme='blade'] .logo-dark-mode,
-:root[data-theme='cyber'] .logo-dark-mode { display: block; content: url('../assets/logo-white.png'); }
+:root[data-theme='cyber'] .logo-dark-mode,
+:root[data-theme='yant'] .logo-dark-mode { display: block; content: url('../assets/logo-white.png'); }
 
 /* ---------- 2. พื้นฐาน ---------- */
 *,

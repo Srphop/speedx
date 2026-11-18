@@ -14,6 +14,7 @@ const THEMES = [
   { id: 'neon', label: 'นีออนม่วง', icon: 'sparkle' },
   { id: 'blade', label: 'ดาบมรกต', icon: 'sword' },
   { id: 'cyber', label: 'ไซเบอร์', icon: 'chip' },
+  { id: 'yant', label: 'สักยันต์', icon: 'hat' },
 ];
 
 function isKnownTheme(id) {

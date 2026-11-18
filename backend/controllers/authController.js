@@ -86,9 +86,9 @@ async function getMe(req, res, next) {
 }
 
 // ธีมที่เลือกได้ (ต้องตรงกับ frontend/js/theme.js)
-const THEMES = ['light', 'dark', 'halloween', 'valentine', 'christmas', 'neon', 'blade', 'cyber'];
+const THEMES = ['light', 'dark', 'halloween', 'valentine', 'christmas', 'neon', 'blade', 'cyber', 'yant'];
 
-// PATCH /api/auth/me/theme  body: { theme: "light" | "dark" | "halloween" | "valentine" | "christmas" | "neon" | "blade" | "cyber" }
+// PATCH /api/auth/me/theme  body: { theme: "light" | "dark" | "halloween" | "valentine" | "christmas" | "neon" | "blade" | "cyber" | "yant" }
 async function updateTheme(req, res, next) {
   try {
     const { theme } = req.body;

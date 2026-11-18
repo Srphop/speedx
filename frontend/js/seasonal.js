@@ -5,6 +5,7 @@
 //   นีออนม่วง  → ริบบิ้นพลังงาน + ประกาย + สายฟ้าแลบ
 //   ดาบมรกต    → ไฟเขียวลอย + หมอกม่วง + รอยฟันดาบ
 //   ไซเบอร์    → สายข้อมูลตก + หกเหลี่ยมลอย + เส้นสแกน
+//   สักยันต์   → ควันลอย + ขี้เถ้าไฟ + แสงตะเกียงวูบ
 // canvas กดทะลุได้ (pointer-events: none) เลยไม่บังปุ่ม
 // คนที่ตั้งเครื่องให้ลดการเคลื่อนไหว จะไม่มีเอฟเฟกต์
 
@@ -412,6 +413,56 @@ function drawCyber(ctx, scene, width, height, seconds) {
   ctx.globalCompositeOperation = 'source-over';
 }
 
+// ---------- สักยันต์: ควันลอยช้า ๆ + ขี้เถ้าไฟสีทองแดง + แสงตะเกียงวูบวาบ ----------
+const YANT_COLORS = ['#FFB347', '#FF5A3C', '#E8C48A'];
+
+function makeYant(width, height) {
+  return {
+    sparks: Array.from({ length: Math.min(45, Math.round((width * height) / 26000)) }, () => newSpark(width, height, YANT_COLORS, true)),
+    smoke: Array.from({ length: 6 }, () => ({
+      x: random(0, width),
+      y: random(0, height),
+      radius: random(120, 260),
+      speed: random(8, 20),
+      drift: random(-6, 6),
+      alpha: random(0.04, 0.09),
+    })),
+    flicker: 0,
+  };
+}
+
+function drawYant(ctx, scene, width, height, seconds) {
+  // ควันจาง ๆ ลอยขึ้น
+  scene.smoke.forEach((m) => {
+    m.y -= m.speed * seconds;
+    m.x += m.drift * seconds;
+    if (m.y < -m.radius) {
+      m.y = height + m.radius;
+      m.x = random(0, width);
+    }
+    const puff = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.radius);
+    puff.addColorStop(0, `rgba(210, 180, 165, ${m.alpha})`);
+    puff.addColorStop(1, 'rgba(210, 180, 165, 0)');
+    ctx.fillStyle = puff;
+    ctx.fillRect(m.x - m.radius, m.y - m.radius, m.radius * 2, m.radius * 2);
+  });
+
+  // แสงตะเกียงมุมขวาบน วูบวาบเบา ๆ
+  scene.flicker += seconds;
+  const glow = 0.1 + Math.sin(scene.flicker * 7) * 0.02 + Math.sin(scene.flicker * 2.3) * 0.03;
+  const lampX = width * 0.96;
+  const lampY = height * 0.18;
+  const lamp = ctx.createRadialGradient(lampX, lampY, 0, lampX, lampY, Math.max(width, height) * 0.4);
+  lamp.addColorStop(0, `rgba(255, 170, 80, ${glow})`);
+  lamp.addColorStop(1, 'rgba(255, 170, 80, 0)');
+  ctx.fillStyle = lamp;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.globalCompositeOperation = 'lighter';
+  drawSparks(ctx, scene.sparks, width, height, seconds, YANT_COLORS);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
 const SEASON_EFFECTS = {
   christmas: { make: makeSnow, draw: drawSnow },
   valentine: { make: makeHearts, draw: drawHearts },
@@ -419,6 +470,7 @@ const SEASON_EFFECTS = {
   neon: { make: makeNeon, draw: drawNeon },
   blade: { make: makeBlade, draw: drawBlade },
   cyber: { make: makeCyber, draw: drawCyber },
+  yant: { make: makeYant, draw: drawYant },
 };
 
 function stopSeasonEffect() {
