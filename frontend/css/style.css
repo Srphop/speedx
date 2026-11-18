@@ -2504,3 +2504,68 @@ textarea.input {
 @media (prefers-reduced-motion: reduce) {
   .online-pulse, .online-person { animation: none; }
 }
+
+/* ---------- ปุ่มเข้าร่วมกิจกรรม (ui.js joinControlHtml) ---------- */
+.join-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.join-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--done-bg);
+  color: var(--done-text);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.join-done .icon,
+.join-hint .icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.join-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.event-heading .event-join {
+  margin-left: auto;
+}
+
+.registered-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.registered-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.registered-list li:last-child {
+  border-bottom: 0;
+}
+
+.join-cell {
+  white-space: nowrap;
+}

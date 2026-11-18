@@ -68,7 +68,8 @@ function heroHtml(next) {
           <span>${icon('members')} ลงชื่อแล้ว ${next.registered_count} คน</span>
         </p>
         <div class="dash-hero-actions">
-          <a class="btn btn-primary" href="event.html?id=${encodeURIComponent(next.event_id)}">ดูรายละเอียด</a>
+          ${joinControlHtml(next)}
+          <a class="btn ${next.status === 'ใกล้ถึง' && isClubMember() !== false ? 'dash-hero-ghost' : 'btn-primary'}" href="event.html?id=${encodeURIComponent(next.event_id)}">ดูรายละเอียด</a>
           <a class="btn dash-hero-ghost" href="calendar.html">เปิดปฏิทิน</a>
         </div>
       </div>
@@ -713,6 +714,7 @@ function renderDashboard(data) {
     </div>`;
 
   document.getElementById('present-button').addEventListener('click', () => startPresentation(true));
+  bindJoinControls(content, () => loadDashboard(true));
 
   animateCounters(content);
   startCountdown(data.next_event);

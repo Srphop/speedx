@@ -54,6 +54,7 @@ async function loadFromSheet() {
   const tabs = await readAllTabs();
   const membersHeader = (tabs.Members[0] || []).map(toText);
   const eventsHeader = (tabs.Events[0] || []).map(toText);
+  const attendanceHeader = (tabs.Attendance[0] || []).map(toText);
 
   return {
     // สมาชิก: เลือกเฉพาะช่องที่หน้าเว็บใช้ (ไม่ส่งที่อยู่ / ข้อมูลสุขภาพ ออกไป)
@@ -66,6 +67,7 @@ async function loadFromSheet() {
       membership_status: toText(row.membership_status).toLowerCase() || 'active',
       _row: row._row,
     })),
+    membersHeader,
     memberStatusColumn: columnLetter(membersHeader.indexOf('membership_status')),
 
     events: rowsToObjects(tabs.Events).map((row) => ({
@@ -90,7 +92,10 @@ async function loadFromSheet() {
       event_id: toText(row.event_id),
       member_id: toText(row.member_id),
       attendance_status: toText(row.attendance_status),
+      _row: row._row,
     })),
+    attendanceHeader,
+    attendanceStatusColumn: columnLetter(attendanceHeader.indexOf('attendance_status')),
 
     funding: rowsToObjects(tabs.Funding).map((row) => ({
       funding_id: toText(row.funding_id),
@@ -134,6 +139,11 @@ const clubCache = createLiveCache(
 
 function getClubData(options) {
   return clubCache.get(options);
+}
+
+// หลังเขียนชีตเอง (เช่น กดเข้าร่วมกิจกรรม) → ให้คำขอถัดไปอ่านชีตใหม่
+function invalidateClubData() {
+  clubCache.invalidate();
 }
 
 // เขียนสถานะสมาชิกกลับลงชีต แล้วล้างข้อมูลที่จำไว้ให้โหลดใหม่
@@ -198,6 +208,7 @@ module.exports = {
   REMINDER_DAYS,
   BUDGET_ALERT_RATIO,
   getClubData,
+  invalidateClubData,
   setMemberStatus,
   createEvent,
   isUpcoming,

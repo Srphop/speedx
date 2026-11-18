@@ -72,6 +72,7 @@ function renderTable() {
         <td class="num">${escapeHtml(formatDateRange(e.start_at, e.end_at))}<div class="muted small">${escapeHtml(formatTimeRange(e.start_at, e.end_at))}${isMultiDay(e.start_at, e.end_at) ? ` (${countDays(e.start_at, e.end_at)} วัน)` : ''}</div></td>
         <td><span class="tag">${escapeHtml(e.category)}</span></td>
         <td>${statusBadge(e.status)}</td>
+        <td class="join-cell">${joinControlHtml(e, { small: true })}${e.status === 'ใกล้ถึง' ? `<div class="muted small">ลงชื่อ ${e.registered_count} คน</div>` : ''}</td>
         <td class="row-arrow">${icon('chevronRight')}</td>
       </tr>`
     )
@@ -81,11 +82,13 @@ function renderTable() {
   tableBox.innerHTML = `
     <div class="table-wrap">
       <table class="table">
-        <thead><tr><th scope="col">ชื่อกิจกรรม</th><th scope="col">วันที่</th><th scope="col">ประเภท</th><th scope="col">สถานะ</th><th scope="col"><span class="visually-hidden">เปิด</span></th></tr></thead>
+        <thead><tr><th scope="col">ชื่อกิจกรรม</th><th scope="col">วันที่</th><th scope="col">ประเภท</th><th scope="col">สถานะ</th><th scope="col">เข้าร่วม</th><th scope="col"><span class="visually-hidden">เปิด</span></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
     <p class="muted small" style="margin-top:12px">แสดง ${events.length} จาก ${allEvents.length} กิจกรรม เลือกแถวเพื่อดูรายละเอียด</p>`;
+
+  bindJoinControls(tableBox, () => loadEvents(true));
 
   // คลิกหรือกด Enter ที่แถว → เปิดรายละเอียดกิจกรรม
   tableBox.querySelectorAll('tr[data-id]').forEach((row) => {

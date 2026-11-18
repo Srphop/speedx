@@ -7,8 +7,13 @@ document.getElementById('back-link').innerHTML = `${icon('arrowLeft')} กลั
 
 function attendeesHtml(data) {
   if (data.attendee_groups.length === 0) {
-    const registered = data.registered_total > 0 ? ` ตอนนี้ลงชื่อไว้ ${data.registered_total} คน` : '';
-    return `<div class="state"><p>ยังไม่มีผู้เข้าร่วมจริง${registered}</p></div>`;
+    // ยังไม่จัด: โชว์รายชื่อคนที่กดเข้าร่วมไว้ (ประธานเปลี่ยนเป็น "เข้าร่วมจริง" ในชีตหลังจบงาน)
+    if (data.registered_members && data.registered_members.length > 0) {
+      return `<ul class="registered-list">${data.registered_members
+        .map((m) => `<li><span>${escapeHtml(m.name)}</span><span class="muted small">${escapeHtml(m.department || 'ไม่ระบุฝ่าย')}</span></li>`)
+        .join('')}</ul>`;
+    }
+    return '<div class="state"><p>ยังไม่มีผู้เข้าร่วม</p></div>';
   }
 
   // แยกตามฝ่าย กลุ่มแรกเปิดไว้ กลุ่มอื่นยุบ
@@ -67,6 +72,7 @@ function renderDetail(data) {
     <div class="event-heading">
       <h2>${escapeHtml(e.title)}</h2>
       ${statusBadge(e.status)}
+      <div class="event-join">${joinControlHtml({ ...e, my_status: data.my_status }, { explain: true })}</div>
     </div>
 
     <div class="grid" style="margin-bottom:24px">
@@ -93,7 +99,7 @@ function renderDetail(data) {
       <section class="card span-6">
         <div class="card-header">
           <h2 class="card-title">สมาชิกที่เข้าร่วม</h2>
-          <span class="muted num">${data.attendee_total} คน</span>
+          <span class="muted num">${data.attendee_total > 0 ? `${data.attendee_total} คน` : `ลงชื่อแล้ว ${data.registered_total} คน`}</span>
         </div>
         ${attendeesHtml(data)}
       </section>
@@ -104,6 +110,7 @@ function renderDetail(data) {
     </div>`;
 
   document.getElementById('download-ics').addEventListener('click', () => downloadIcs(e));
+  bindJoinControls(detailBox, () => loadEvent(true));
 
   drawPieChart(
     document.getElementById('budget-chart'),

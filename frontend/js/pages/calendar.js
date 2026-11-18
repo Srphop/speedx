@@ -249,10 +249,12 @@ function renderPanel() {
         <div><dt>สถานที่</dt><dd>${escapeHtml(event.location)}</dd></div>
         <div><dt>ผู้จัด</dt><dd>${escapeHtml(event.organizer)}</dd></div>
       </dl>
-      <a class="btn btn-primary" style="margin-top:24px;width:100%" href="event.html?id=${encodeURIComponent(event.event_id)}">ดูรายละเอียดกิจกรรม</a>
+      <div style="margin-top:20px">${joinControlHtml(event, { explain: true })}</div>
+      <a class="btn btn-outline" style="margin-top:16px;width:100%" href="event.html?id=${encodeURIComponent(event.event_id)}">ดูรายละเอียดกิจกรรม</a>
     </div>`;
 
   document.getElementById('panel-close').addEventListener('click', () => selectEvent(null));
+  bindJoinControls(panel, () => loadCalendar(true));
 }
 
 function selectEvent(id) {

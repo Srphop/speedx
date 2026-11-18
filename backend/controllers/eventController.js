@@ -9,12 +9,15 @@ const {
   withPercent,
 } = require('../services/clubData');
 const { getNow } = require('../utils/time');
+const { joinEvent, cancelJoin, myAttendance } = require('../services/participation');
 
 // GET /api/events → กิจกรรมทั้งหมด (ใช้ทั้งหน้าตารางกิจกรรมและปฏิทิน)
 async function getEvents(req, res, next) {
   try {
-    const { events, attendance, expenses } = await getClubData();
+    const data = await getClubData();
+    const { events, attendance, expenses } = data;
     const now = getNow();
+    const mine = await myAttendance(req.userId, data); // สถานะการเข้าร่วมของคนที่เปิดหน้านี้
 
     const items = events
       .map((event) => ({
@@ -27,6 +30,10 @@ async function getEvents(req, res, next) {
         location: event.location,
         organizer: event.department,
         status: getDisplayStatus(event, now),
+        my_status: mine.get(event.event_id) || null,
+        registered_count: attendance.filter(
+          (a) => a.event_id === event.event_id && a.attendance_status === REGISTERED
+        ).length,
         attendee_count: attendance.filter(
           (a) => a.event_id === event.event_id && a.attendance_status === ATTENDED
         ).length,
@@ -45,7 +52,8 @@ async function getEvents(req, res, next) {
 // GET /api/events/:id → รายละเอียดกิจกรรม + ผู้เข้าร่วมแยกตามฝ่าย + งบที่ใช้
 async function getEventById(req, res, next) {
   try {
-    const { events, attendance, members, expenses } = await getClubData();
+    const data = await getClubData();
+    const { events, attendance, members, expenses } = data;
     const event = events.find((e) => e.event_id === req.params.id);
 
     if (!event) {
@@ -81,6 +89,15 @@ async function getEventById(req, res, next) {
       (item) => ({ category: item.key, amount: item.amount, percent: item.percent })
     );
 
+    // คนที่ลงชื่อไว้ (ยังไม่จัด) ชื่อ + ฝ่าย เรียงตามลำดับที่ลงชื่อในชีต
+    const registeredMembers = attendance
+      .filter((a) => a.event_id === event.event_id && a.attendance_status === REGISTERED)
+      .map((a) => members.find((m) => m.member_id === a.member_id))
+      .filter(Boolean)
+      .map((m) => ({ member_id: m.member_id, name: m.name, department: m.department }));
+
+    const mine = await myAttendance(req.userId, data);
+
     res.json({
       event: {
         event_id: event.event_id,
@@ -98,9 +115,9 @@ async function getEventById(req, res, next) {
         target_group: event.target_group,
       },
       attendee_total: attendeeRows.length,
-      registered_total: attendance.filter(
-        (a) => a.event_id === event.event_id && a.attendance_status === REGISTERED
-      ).length,
+      registered_total: registeredMembers.length,
+      registered_members: registeredMembers,
+      my_status: mine.get(event.event_id) || null,
       attendee_groups: attendeeGroups,
       total_spent: totalSpent,
       spending_by_category: spendingByCategory,
@@ -154,4 +171,27 @@ async function addEvent(req, res, next) {
   }
 }
 
-module.exports = { getEvents, getEventById, addEvent };
+// POST /api/events/:id/join → ลงชื่อเข้าร่วม (เฉพาะสมาชิกชมรม และกิจกรรมที่ "ใกล้ถึง")
+async function joinEventHandler(req, res, next) {
+  try {
+    const result = await joinEvent(req.userId, req.params.id);
+    res.status(result.already ? 200 : 201).json({
+      message: result.already ? `คุณลงชื่อ ${result.event.title} ไว้แล้ว` : `ลงชื่อเข้าร่วม ${result.event.title} แล้ว`,
+      my_status: result.status,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// DELETE /api/events/:id/join → ยกเลิกการลงชื่อ (สถานะในชีตเปลี่ยนเป็น "ยกเลิก")
+async function cancelJoinHandler(req, res, next) {
+  try {
+    const result = await cancelJoin(req.userId, req.params.id);
+    res.json({ message: `ยกเลิกการเข้าร่วม ${result.event.title} แล้ว`, my_status: null });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { getEvents, getEventById, addEvent, joinEvent: joinEventHandler, cancelJoin: cancelJoinHandler };

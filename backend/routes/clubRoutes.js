@@ -4,7 +4,7 @@ const express = require('express');
 const requireAuth = require('../middleware/requireAuth');
 const requireMember = require('../middleware/requireMember');
 const { getNews } = require('../controllers/newsController');
-const { getEvents, getEventById, addEvent } = require('../controllers/eventController');
+const { getEvents, getEventById, addEvent, joinEvent, cancelJoin } = require('../controllers/eventController');
 const { getMembers, deactivateMember } = require('../controllers/memberController');
 const { getFinance } = require('../controllers/financeController');
 const { getNotifications } = require('../controllers/notificationController');
@@ -20,6 +20,8 @@ router.get('/news', getNews);
 router.get('/events', getEvents);
 router.get('/events/:id', getEventById);
 router.post('/events', requireMember, addEvent);
+router.post('/events/:id/join', requireMember, joinEvent); // กดเข้าร่วมกิจกรรม
+router.delete('/events/:id/join', requireMember, cancelJoin); // ยกเลิกการเข้าร่วม
 router.get('/members', getMembers);
 router.patch('/members/:id/deactivate', requireMember, deactivateMember);
 router.get('/finance', getFinance);

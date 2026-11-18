@@ -1,7 +1,9 @@
 // ===== บัญชีผู้ใช้ เก็บในแท็บ "Users" ของ Google Sheet =====
-// หัวตาราง: user_id | name | email | password_hash | theme | created_at | position | avatar_color | avatar_image
+// หัวตาราง: user_id | name | email | password_hash | theme | created_at | position | avatar_color | avatar_image | member_id
 // รหัสผ่านไม่ได้เก็บตรง ๆ เก็บแค่ค่าที่เข้ารหัสแล้ว (bcrypt)
 // avatar_image = รูปโปรไฟล์ที่ย่อแล้ว เก็บเป็นข้อความ (data URL) ในช่องเดียว
+// member_id    = บัญชีนี้คือสมาชิกคนไหนในแท็บ Members (ระบบใส่ให้เองตอนกดเข้าร่วมกิจกรรมครั้งแรก
+//                ประธานแก้ในชีตได้ ถ้าจับคู่ผิดคน)
 //
 // สิทธิ์ใช้งาน: ประธานชมรมตั้งในชีตเองที่คอลัมน์ position (ผู้ใช้แก้เองจากหน้าเว็บไม่ได้)
 //   ว่างไว้ (หรือเขียนว่า ผู้เยี่ยมชม) → ผู้เยี่ยมชม ดูได้อย่างเดียว
@@ -21,6 +23,7 @@ const COLUMNS = [
   'position',
   'avatar_color',
   'avatar_image',
+  'member_id',
 ];
 
 function columnLetter(key) {
@@ -86,6 +89,7 @@ async function createUser({ name, email, passwordHash }) {
     position: VISITOR_LABEL, // สมัครใหม่ = ผู้เยี่ยมชมเสมอ ประธานค่อยเปลี่ยนในชีต
     avatar_color: '',
     avatar_image: '',
+    member_id: '',
   };
   await appendRow(USERS_TAB, COLUMNS.map((key) => user[key]));
   usersCache.invalidate();

@@ -1,6 +1,7 @@
 // ===== หน้า ภาพรวม (Dashboard): สรุปทุกอย่างของชมรมในหน้าเดียว =====
-const { ATTENDED, REGISTERED, getClubData } = require('../services/clubData');
+const { ATTENDED, REGISTERED, getClubData, getDisplayStatus } = require('../services/clubData');
 const { getNow, bangkokDateKey } = require('../utils/time');
+const { myAttendance } = require('../services/participation');
 
 const CANCELLED = 'ยกเลิก';
 const DONE = 'จัดแล้ว';
@@ -29,7 +30,8 @@ function eachDay(startKey, endKey) {
 // GET /api/overview
 async function getOverview(req, res, next) {
   try {
-    const { members, events, attendance, funding, expenses, news } = await getClubData();
+    const data = await getClubData();
+    const { members, events, attendance, funding, expenses, news } = data;
     const now = getNow();
 
     const activeMembers = members.filter((m) => m.membership_status === 'active');
@@ -71,6 +73,8 @@ async function getOverview(req, res, next) {
           end_at: nextEvent.end_at,
           location: nextEvent.location,
           is_live: new Date(nextEvent.start_at) <= now,
+          status: getDisplayStatus(nextEvent, now), // "ใกล้ถึง" = กดเข้าร่วมได้
+          my_status: (await myAttendance(req.userId, data)).get(nextEvent.event_id) || null,
           registered_count: countFor(nextEvent.event_id, REGISTERED) + countFor(nextEvent.event_id, ATTENDED),
         }
       : null;
