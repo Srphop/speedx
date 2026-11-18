@@ -143,8 +143,8 @@ function startLiveData() {
 }
 
 // ---------- แถบ "ออนไลน์ตอนนี้" ----------
-// บอก backend ทุก 25 วินาทีว่ายังเปิดเว็บอยู่ แล้วได้รายชื่อคนออนไลน์กลับมา
-const PRESENCE_EVERY_MS = 25 * 1000;
+// บอก backend ทุก 10 วินาทีว่ายังเปิดเว็บอยู่ แล้วได้รายชื่อคนออนไลน์ + ยศล่าสุดกลับมา
+const PRESENCE_EVERY_MS = 10 * 1000;
 const ONLINE_SHOWN = 6;
 
 function roleClass(person) {

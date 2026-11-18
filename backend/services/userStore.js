@@ -28,9 +28,9 @@ function columnLetter(key) {
 }
 
 // อ่านผู้ใช้ทั้งหมด → [{ user_id, name, email, ..., _row: เลขแถวในชีต }]
-// จำไว้แบบเดียวกับข้อมูลชมรม: ระหว่างมีคนใช้ อ่านแท็บ Users ใหม่ทุก 10 วินาที
+// จำไว้แบบเดียวกับข้อมูลชมรม: ระหว่างมีคนใช้ อ่านแท็บ Users ใหม่ทุก 5 วินาที
 // (ประธานเปลี่ยนยศในชีต เว็บเห็นภายในไม่กี่วินาที แต่ไม่ต้องอ่านชีตทุกคำขอ)
-const usersCache = createLiveCache(readUsersFromSheet, { refreshMs: 10 * 1000 });
+const usersCache = createLiveCache(readUsersFromSheet, { refreshMs: 5 * 1000 });
 
 function readUsers(options) {
   return usersCache.get(options);
@@ -124,4 +124,4 @@ function roleLabel(user) {
   return isClubMember(user) ? String(user.position).trim() : VISITOR_LABEL;
 }
 
-module.exports = { findUserByEmail, findUserById, createUser, updateUser, updateUserTheme, isClubMember, roleLabel };
+module.exports = { listUsers: readUsers, findUserByEmail, findUserById, createUser, updateUser, updateUserTheme, isClubMember, roleLabel };

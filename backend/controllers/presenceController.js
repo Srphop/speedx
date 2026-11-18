@@ -1,6 +1,6 @@
 // ===== แถบ "ออนไลน์ตอนนี้" =====
-const { findUserById } = require('../services/userStore');
-const { needsProfile, markOnline, markOffline, markLeaving, listOnline } = require('../services/presence');
+const { listUsers } = require('../services/userStore');
+const { markOnline, markOffline, markLeaving, listOnline } = require('../services/presence');
 const { toPublicUser } = require('./authController');
 
 // หน้าที่เปิดอยู่ (ไว้โชว์ว่าแต่ละคนดูหน้าไหน)
@@ -17,16 +17,17 @@ const PAGES = {
 // บอกว่ายังออนไลน์อยู่ แล้วได้รายชื่อคนออนไลน์ + ข้อมูลบัญชีตัวเองล่าสุด (ยศ / สิทธิ์) กลับไป
 async function heartbeat(req, res, next) {
   try {
-    let user = null;
-    if (needsProfile(req.userId)) {
-      const found = await findUserById(req.userId);
-      if (!found) return res.status(401).json({ message: 'ไม่พบบัญชีนี้ กรุณาเข้าสู่ระบบใหม่' });
-      const { id, name, avatar_color, avatar_image, role, is_member } = toPublicUser(found);
-      user = { id, name, avatar_color, avatar_image, role, is_member };
-    }
-    markOnline(req.userId, PAGES[req.body.page] || '', user);
+    // แท็บ Users ที่เซิร์ฟเวอร์จำไว้ (อ่านชีตใหม่เองทุก 5 วินาที ไม่ต้องรอ Google ตรงนี้)
+    const users = new Map((await listUsers()).map((user) => [user.user_id, user]));
+    if (!users.has(req.userId)) return res.status(401).json({ message: 'ไม่พบบัญชีนี้ กรุณาเข้าสู่ระบบใหม่' });
+    markOnline(req.userId, PAGES[req.body.page] || '');
 
-    const online = listOnline();
+    const online = listOnline((userId) => {
+      const found = users.get(userId);
+      if (!found) return null;
+      const { id, name, avatar_color, avatar_image, role, is_member } = toPublicUser(found);
+      return { id, name, avatar_color, avatar_image, role, is_member };
+    });
     res.json({ online, me: online.find((person) => person.id === req.userId) || null });
   } catch (error) {
     next(error);
